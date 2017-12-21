@@ -13,9 +13,14 @@ import jp.walkmate.tsndservice.Thread.TSNDConnectionThread
 
 class SensorCommunicationService : Service() {
 
+    val ACTION_STOP_MEASURE = "Stop Measure"
+    val ACTION_DISCONNECT = "Disconnect"
+
     private val binder: IBinder = LocalBinder()
     private var sensorService: TSNDService? = null
     var isMeasuring = false
+    var isConnected: Boolean = false
+        get() = sensorService?.isConnected ?: false
 
     inner class LocalBinder: Binder() {
         fun getService(): SensorCommunicationService = this@SensorCommunicationService
@@ -25,8 +30,20 @@ class SensorCommunicationService : Service() {
         sensorService = TSNDServiceImpl("00:07:80:76:87:6E")
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        intent?.let { handleIntent(it) }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
     override fun onBind(intent: Intent): IBinder? {
         return binder
+    }
+
+    private fun handleIntent(intent: Intent) {
+        when (intent.action) {
+            ACTION_STOP_MEASURE -> stopMeasure()
+            ACTION_DISCONNECT -> disconnectAll()
+        }
     }
 
     fun connectAll() {
@@ -46,6 +63,10 @@ class SensorCommunicationService : Service() {
         }
     }
 
+    fun disconnectAll() {
+        sensorService?.disconnect()
+    }
+
     fun startMeasure() {
         sensorService?.let {
             if (it.isConnected) {
@@ -62,6 +83,15 @@ class SensorCommunicationService : Service() {
                 it.stop()
             }
         }
+    }
+
+    fun getSensorData(): SensorData = sensorService?.run {
+            SensorData(0, accX, accY, accZ, gyrX, gyrY, gyrZ)
+        } ?: SensorData()
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disconnectAll()
     }
 
     private fun showToast(text: String) = Handler(Looper.getMainLooper()).apply {

@@ -4,27 +4,126 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.paranoid.mao.tsnddemo.MainActivity">
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    tools:context="com.paranoid.mao.tsnddemo.MainActivity"
+    tools:layout_editor_absoluteY="81dp">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/connectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="16dp"
+        android:text="@string/connect"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/measureButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/start_measure"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Button"
-        app:layout_constraintEnd_toEndOf="@+id/textView"
-        app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        android:alignmentMode="alignBounds"
+        android:columnCount="4"
+        android:columnOrderPreserved="false"
+        android:padding="8dp"
+        android:rowCount="4"
+        android:useDefaultMargins="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1" />
+
+        <TextView
+            style="@style/GridTextViewBold"
+            android:layout_height="wrap_content"
+            android:text="@string/axis_x" />
+
+        <TextView
+            style="@style/GridTextViewBold"
+            android:layout_height="wrap_content"
+            android:text="@string/axis_y" />
+
+        <TextView
+            style="@style/GridTextViewBold"
+            android:layout_height="wrap_content"
+            android:text="@string/axis_z" />
+
+        <TextView
+            style="@style/GridTextViewBold"
+            android:layout_height="wrap_content"
+            android:text="@string/acc" />
+
+        <TextView
+            android:id="@+id/tvAccX"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvAccY"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvAccZ"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/GridTextViewBold"
+            android:layout_height="wrap_content"
+            android:text="@string/gyro"/>
+
+        <TextView
+            android:id="@+id/tvGyroX"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvGyroY"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvGyroZ"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/GridTextViewBold"
+            android:layout_height="wrap_content"
+            android:text="@string/Mag"/>
+
+        <TextView
+            android:id="@+id/tvMagX"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvMagY"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvMagZ"
+            style="@style/GridTextView"
+            android:layout_height="wrap_content" />
+
+    </GridLayout>
+
 
 </android.support.constraint.ConstraintLayout>

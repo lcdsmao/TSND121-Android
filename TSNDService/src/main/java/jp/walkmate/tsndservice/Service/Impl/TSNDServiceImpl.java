@@ -37,7 +37,7 @@ public class TSNDServiceImpl implements TSNDService {
     public static final byte RECEIVED_GET_BATTERY_CHARGE = (byte)0xBB;
     public static final byte RECEIVED_GET_STATUS = (byte)0xBC;
 
-    protected int sampling_interval_msec = 10;
+    protected int sampling_interval_msec = 3;
 
     protected InputStream inputStream = null;
     protected OutputStream outputStream = null;
@@ -54,6 +54,7 @@ public class TSNDServiceImpl implements TSNDService {
     protected int time;
     protected int acc_x, acc_y, acc_z;
     protected int gyr_x, gyr_y, gyr_z;
+    protected int mag_x, mag_y, mag_z;
 
     protected boolean isConnected = false;
 
@@ -166,7 +167,7 @@ public class TSNDServiceImpl implements TSNDService {
                     }
                 }
             }
-        }, 0, (int)(sampling_interval_msec*0.15));
+        }, 0, (int)(sampling_interval_msec*0.5));
     }
 
     @Override
@@ -346,6 +347,21 @@ public class TSNDServiceImpl implements TSNDService {
     @Override
     public int getGyrZ(){
         return gyr_z;
+    }
+
+    @Override
+    public int getMagX() {
+        return mag_x;
+    }
+
+    @Override
+    public int getMagY() {
+        return mag_y;
+    }
+
+    @Override
+    public int getMagZ() {
+        return mag_z;
     }
 
     int getByteOffset;

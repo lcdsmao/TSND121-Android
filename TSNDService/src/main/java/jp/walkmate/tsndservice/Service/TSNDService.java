@@ -72,6 +72,12 @@ public interface TSNDService {
      */
     int getGyrZ();
 
+    int getMagX();
+
+    int getMagY();
+
+    int getMagZ();
+
     /**
      * センサ状態の取得
      * @return

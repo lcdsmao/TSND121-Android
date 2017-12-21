@@ -1,6 +1,8 @@
 <resources>
-    <string name="app_name">TSDNDemo</string>
-    <string name="connect">Connect</string>
+    <string name="app_name">TSNDDemo</string>
+    <string name="connect">Connect</string>\
+    <string name="connected">Connected</string>
+    <string name="disconnect">Disconnect</string>
     <string name="start_measure">Start Measure</string>
     <string name="stop_measure">Stop Measure</string>
 

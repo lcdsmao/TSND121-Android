@@ -9,31 +9,60 @@ import kotlinx.android.synthetic.main.activity_main.*
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
 import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService.LocalBinder
 import android.os.IBinder
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService
+import com.paranoid.mao.tsnddemo.tsnd.SensorData
+import kotlin.properties.Delegates
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener{
 
     private val REQUEST_ENABLE_BT = 101
+    private val UI_UPDATE_INTERVAL: Long = 200
 
-    var sensorCommunicationService: SensorCommunicationService? = null
-    var bound: Boolean = false
+    private var sensorCommunicationService: SensorCommunicationService? = null
+    private var bound: Boolean = false
+
+    private val handler = Handler()
+    private val displaySensorDataRunnable: Runnable = object : Runnable {
+        override fun run() {
+            sensorCommunicationService?.getSensorData()?.displayText()
+            handler.postDelayed(this, UI_UPDATE_INTERVAL)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         requestBluetooth()
+        connectButton.setOnClickListener(this)
+        measureButton.setOnClickListener(this)
     }
 
     override fun onClick(v: View) {
-        when(v) {
-            connectButton -> if (bound) sensorCommunicationService?.connectAll()
-            measureButton -> {
+        when(v.id) {
+            R.id.connectButton -> {
+                if (bound) {
+//                    sensorCommunicationService?.let {
+//                        if (it.isConnected) {
+//                            it.disconnectAll()
+//                            connectButton.setText(R.string.connect)
+//                            measureButton.setText(R.string.start_measure)
+//                        } else {
+//                            it.connectAll()
+//                            connectButton.setText(R.string.disconnect)
+//                        }
+//                    }
+                    sensorCommunicationService?.connectAll()
+                }
+            }
+            R.id.measureButton -> {
                 if (bound) {
                     sensorCommunicationService?.let {
                         if (it.isMeasuring) {
@@ -69,17 +98,32 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
 
     override fun onResume() {
         super.onResume()
+        handler.postDelayed(displaySensorDataRunnable, UI_UPDATE_INTERVAL)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        handler.removeCallbacks(displaySensorDataRunnable)
     }
 
     override fun onStart() {
         super.onStart()
         val intent = Intent(this, SensorCommunicationService::class.java)
+        startService(intent)
         bindService(intent, sensorConnection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onStop() {
         super.onStop()
         unbindService(sensorConnection)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isFinishing) {
+            val intent = Intent(this, SensorCommunicationService::class.java)
+            stopService(intent)
+        }
     }
 
     private val sensorConnection = object : ServiceConnection {
@@ -92,5 +136,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
             sensorCommunicationService = binder.getService()
             bound = true
         }
+    }
+
+    private fun SensorData.displayText() {
+        tvAccX.text = accX.toString()
+        tvAccY.text = accY.toString()
+        tvAccZ.text = accZ.toString()
+        tvGyroX.text = gyroX.toString()
+        tvGyroY.text = gyroY.toString()
+        tvGyroZ.text = gyroZ.toString()
+        tvMagX.text = magX.toString()
+        tvMagY.text = magY.toString()
+        tvMagZ.text = magZ.toString()
     }
 }
