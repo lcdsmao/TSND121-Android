@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -24,7 +25,6 @@
             android:name=".tsnd.SensorCommunicationService"
             android:enabled="true"
             android:exported="false">
-
         </service>
     </application>
 
