@@ -24,20 +24,23 @@ public class TSNDServiceImpl implements TSNDService {
     public static final byte COMMAND_START_MEASURING = (byte)0x13;
     public static final byte COMMAND_STOP_MEASURING = (byte)0x15;
     public static final byte COMMAND_ACCGYR_SETTING  = (byte)0x16;
+    public static final byte COMMAND_MAG_SETTING = (byte)0x18;
     public static final byte COMMAND_ACC_RANGE_SETTING  = (byte)0x22;
     public static final byte COMMAND_GYR_RANGE_SETTING  = (byte)0x25;
+    public static final byte COMMAND_MAG_CALIBRATION_SETTING = (byte)0x28;
     public static final byte COMMAND_SET_BEEP_VOLUME = (byte)0x32;
     public static final byte COMMAND_SOUND_BEEP  = (byte)0x34;
     public static final byte COMMAND_GET_BATTERY_CHARGE = (byte)0x3B;
     public static final byte COMMAND_GET_STATUS = (byte)0x3C;
 
 
-    public static final byte RECEIVED_MEASURING_DATA = (byte)0x80;
+    public static final byte RECEIVED_ACC_GYRO_DATA = (byte)0x80;
+    public static final byte RECEIVED_MAG_DATA = (byte)0x81;
     public static final byte RECEIVED_START_MEASURING = (byte)0x93;
     public static final byte RECEIVED_GET_BATTERY_CHARGE = (byte)0xBB;
     public static final byte RECEIVED_GET_STATUS = (byte)0xBC;
 
-    protected int sampling_interval_msec = 3;
+    protected int sampling_interval_msec = 10; // >10 because of mag?
 
     protected InputStream inputStream = null;
     protected OutputStream outputStream = null;
@@ -167,7 +170,7 @@ public class TSNDServiceImpl implements TSNDService {
                     }
                 }
             }
-        }, 0, (int)(sampling_interval_msec*0.5));
+        }, 0, (int)(sampling_interval_msec*0.25));
     }
 
     @Override
@@ -275,22 +278,51 @@ public class TSNDServiceImpl implements TSNDService {
 
     public boolean getSensorData(){
         try {
+            boolean accGyroOk = false, magOk = false;
             while (true) {
                 if(-1 != inputStream.read(byteBuffer)) {
                     if (PROTOCOL_HEADER == byteBuffer[0]){
                         inputStream.read(byteBuffer);
-                        if(RECEIVED_MEASURING_DATA == byteBuffer[0]){
+                        if(RECEIVED_ACC_GYRO_DATA == byteBuffer[0]){
                             received_length = inputStream.read(received_params, 0, 23);
 
                             for(int i=received_length; i<22; i++){
                                 inputStream.read(byteBuffer);
                                 received_params[i] = byteBuffer[0];
                             }
+
+                            time = get4Byte(received_params, 0);
+                            acc_x = get3Byte(received_params, 4);
+                            acc_y = get3Byte(received_params, 7);
+                            acc_z = get3Byte(received_params, 10);
+
+                            gyr_x = get3Byte(received_params, 13);
+                            gyr_y = get3Byte(received_params, 16);
+                            gyr_z = get3Byte(received_params, 19);
+
                             waitCount = 0;
-                            break;
+                            accGyroOk = true;
+                        } else if (RECEIVED_MAG_DATA == byteBuffer[0]) {
+
+                            received_length = inputStream.read(received_params, 0, 13);
+
+                            for(int i=received_length; i<13; i++){
+                                inputStream.read(byteBuffer);
+                                received_params[i] = byteBuffer[0];
+                            }
+
+//                            time = get4Byte(received_params, 0);
+                            mag_x = get3Byte(received_params, 4);
+                            mag_y = get3Byte(received_params, 7);
+                            mag_z = get3Byte(received_params, 10);
+                            waitCount = 0;
+                            magOk = true;
                         }
+
                     }
                 }
+//                Log.v("OK", "ACC " + accGyroOk + ", mag " + magOk);
+                if (accGyroOk && magOk) break;
             }
         }catch (IOException e){
             waitCount++;
@@ -299,15 +331,6 @@ public class TSNDServiceImpl implements TSNDService {
                 return false;
             }
         }
-
-        time = get4Byte(received_params, 0);
-        acc_x = -get3Byte(received_params, 4);
-        acc_y = -get3Byte(received_params, 7);
-        acc_z = get3Byte(received_params, 10);
-
-        gyr_x = -get3Byte(received_params, 13);
-        gyr_y = -get3Byte(received_params, 16);
-        gyr_z = get3Byte(received_params, 19);
 
         return true;
     }
@@ -451,17 +474,31 @@ public class TSNDServiceImpl implements TSNDService {
         };
         sendCommand(COMMAND_ACCGYR_SETTING, params);
 
+        //Mag基本設定
+        params = new byte[]{
+                (byte) sampling_interval_msec,  //インターバル（msec）
+                1,  //計測データ送信回数
+                0   //内部記録回数
+        };
+        sendCommand(COMMAND_MAG_SETTING, params);
+
         //加速度レンジ設定
         params = new byte[]{
-                2   //0:±2G,1:±4G,2:±8G,3:±16G
+                3   //0:±2G,1:±4G,2:±8G,3:±16G
         };
         sendCommand(COMMAND_ACC_RANGE_SETTING, params);
 
         //ジャイロレンジ設定
         params = new byte[]{
-                2   //0:±250dps,1:±500dps,2:±1000dps,3:±2000dp
+                3   //0:±250dps,1:±500dps,2:±1000dps,3:±2000dp
         };
         sendCommand(COMMAND_GYR_RANGE_SETTING, params);
+
+        //Mag設定
+//        params = new byte[]{
+//                0   //0
+//        };
+//        sendCommand(COMMAND_MAG_CALIBRATION_SETTING, params);
     }
 
     @Override
