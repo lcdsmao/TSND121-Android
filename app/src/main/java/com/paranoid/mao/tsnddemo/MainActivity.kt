@@ -1,5 +1,6 @@
 package com.paranoid.mao.tsnddemo
 
+import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.ServiceConnection
@@ -9,21 +10,23 @@ import kotlinx.android.synthetic.main.activity_main.*
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Handler
 import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService.LocalBinder
 import android.os.IBinder
-import android.util.Log
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.view.View
 import android.widget.Toast
 import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService
 import com.paranoid.mao.tsnddemo.tsnd.SensorData
-import kotlin.properties.Delegates
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener{
 
     private val REQUEST_ENABLE_BT = 101
-    private val UI_UPDATE_INTERVAL: Long = 200
+    private val REQUEST_WRITE_PERSSIMISON = 102
+    private val UI_UPDATE_INTERVAL: Long = 100
 
     private var sensorCommunicationService: SensorCommunicationService? = null
     private var bound: Boolean = false
@@ -31,10 +34,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
     private val handler = Handler()
     private val displaySensorDataRunnable: Runnable = object : Runnable {
         override fun run() {
-            sensorCommunicationService?.getSensorData()?.displayText()
+            sensorCommunicationService?.sensorData?.displayText()
+            sensorCommunicationService?.sensorData?.run {
+                graphAcc.addData(time, accX, accY, accZ)
+            }
             handler.postDelayed(this, UI_UPDATE_INTERVAL)
         }
     }
+    private val graphAcc = RealtimeGraphFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,32 +50,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
         requestBluetooth()
         connectButton.setOnClickListener(this)
         measureButton.setOnClickListener(this)
+        supportFragmentManager.beginTransaction().replace(R.id.graphContainer, graphAcc).commit()
     }
 
     override fun onClick(v: View) {
-        when(v.id) {
-            R.id.connectButton -> {
+        when(v) {
+            connectButton -> {
                 if (bound) {
-//                    sensorCommunicationService?.let {
-//                        if (it.isConnected) {
-//                            it.disconnectAll()
-//                            connectButton.setText(R.string.connect)
-//                            measureButton.setText(R.string.start_measure)
-//                        } else {
-//                            it.connectAll()
-//                            connectButton.setText(R.string.disconnect)
-//                        }
-//                    }
                     sensorCommunicationService?.connectAll()
                 }
             }
-            R.id.measureButton -> {
+            measureButton -> {
                 if (bound) {
                     sensorCommunicationService?.let {
                         if (it.isMeasuring) {
                             it.stopMeasure()
                             measureButton.setText(R.string.start_measure)
                         } else {
+                            if (requestPermission()) return
                             it.startMeasure()
                             measureButton.setText(R.string.stop_measure)
                         }
@@ -96,14 +95,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when (requestCode) {
+            REQUEST_WRITE_PERSSIMISON -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    finish()
+                }
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         handler.postDelayed(displaySensorDataRunnable, UI_UPDATE_INTERVAL)
     }
 
     override fun onPause() {
-        super.onPause()
         handler.removeCallbacks(displaySensorDataRunnable)
+        super.onPause()
     }
 
     override fun onStart() {
@@ -114,16 +123,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
     }
 
     override fun onStop() {
-        super.onStop()
         unbindService(sensorConnection)
+        super.onStop()
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         if (isFinishing) {
             val intent = Intent(this, SensorCommunicationService::class.java)
             stopService(intent)
         }
+        super.onDestroy()
+    }
+
+    private fun requestPermission(): Boolean {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    REQUEST_WRITE_PERSSIMISON)
+            return true
+        }
+        return false
     }
 
     private val sensorConnection = object : ServiceConnection {
