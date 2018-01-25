@@ -1,14 +1,17 @@
 <resources>
     <string name="app_name">TSNDDemo</string>
-    <string name="connect">Connect</string>\
+    <string name="connect">Connect</string>
     <string name="connected">Connected</string>
     <string name="disconnect">Disconnect</string>
     <string name="start_measure">Start Measure</string>
     <string name="stop_measure">Stop Measure</string>
+    <string name="left_connect">Left</string>
+    <string name="right_connect">Right</string>
 
     <string name="msg_connect_success">Connected</string>
     <string name="msg_connect_failed">Connection Failed</string>
     <string name="msg_need_bluetooth">Need Bluetooth!</string>
+    <string name="msg_please_connect">Please Connect Sensor</string>
 
     <string name="acc">Acc</string>
     <string name="gyro">Gyro</string>

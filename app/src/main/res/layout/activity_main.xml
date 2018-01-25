@@ -7,23 +7,61 @@
     tools:context="com.paranoid.mao.tsnddemo.MainActivity"
     tools:layout_editor_absoluteY="81dp">
 
-    <Button
-        android:id="@+id/connectButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:layout_marginStart="16dp"
-        android:text="@string/connect"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/measureButton"
+    <TextView
+        android:id="@+id/connectLeft"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:drawableStart="@drawable/selector_connect"
+        android:drawablePadding="16dp"
+        android:gravity="center"
+        android:text="@string/left_connect"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        app:layout_constraintBottom_toBottomOf="@+id/connectRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/connectRight" />
+
+    <TextView
+        android:id="@+id/connectRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:drawableStart="@drawable/selector_connect"
+        android:drawablePadding="16dp"
+        android:gravity="center"
+        android:text="@string/right_connect"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        app:layout_constraintBottom_toBottomOf="@+id/measureButton"
+        app:layout_constraintStart_toEndOf="@+id/connectLeft"
+        app:layout_constraintTop_toTopOf="@+id/measureButton" />
+
+    <ImageView
+        android:id="@+id/measureButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
-        android:text="@string/start_measure"
+        android:src="@drawable/selector_measure"
+        android:contentDescription="@string/start_measure"
+        android:background="?android:selectableItemBackgroundBorderless"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/connectButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@string/connect"
+        android:background="?android:selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_bluetooth_searching"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
