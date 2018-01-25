@@ -32,6 +32,6 @@ class SensorDataSaver(name: String = "") {
         folder.mkdirs()
         sensorDataFile = File(folder, fileName)
         sensorDataFile?.appendText(csvFormat.format(
-                listOf("time(msec)", "Ax", "Ay", "Az", "Gx", "Gy", "Gz", "Mx", "Mz", "My", "Mz")))
+                listOf("time(msec)", "Ax", "Ay", "Az", "Gx", "Gy", "Gz", "Mx", "My", "Mz")))
     }
 }
