@@ -1,11 +1,12 @@
 package com.paranoid.mao.tsnddemo.tsnd
 
+import com.paranoid.mao.tsnddemo.model.SensorData
 import jp.walkmate.tsndservice.Service.Impl.TSNDServiceImpl
 
 /**
  * Created by Paranoid on 12/26/17.
  */
-class SensorManager(val name: String, address: String) : TSNDServiceImpl(address) {
+class SensorService(val name: String, address: String) : TSNDServiceImpl(address) {
 
     var data: SensorData = SensorData()
         get() = SensorData(time, accX, accY, accZ, gyrX, gyrY, gyrZ, magX, magY, magZ)

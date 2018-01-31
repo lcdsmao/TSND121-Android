@@ -1,7 +1,7 @@
 package com.paranoid.mao.tsnddemo.tsnd
 
-import android.util.Log
 import com.paranoid.mao.tsnddemo.csv.SimpleCSVFormat
+import com.paranoid.mao.tsnddemo.model.SensorData
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
