@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">TSNDDemo</string>
+    <string name="title_activity_edit">Manage</string>
+
+
     <string name="connect">Connect</string>
     <string name="connected">Connected</string>
     <string name="disconnect">Disconnect</string>
@@ -19,4 +22,9 @@
     <string name="axis_x">X</string>
     <string name="axis_y">Y</string>
     <string name="axis_z">Z</string>
+
+    <string name="manage_sensor">Manage Sensor</string>
+    <string name="add_sensor">Add Sensor</string>
+    <string name="add_sensor_name">Name</string>
+    <string name="add_sensor_mac">MAC address</string>
 </resources>
