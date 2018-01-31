@@ -15,11 +15,10 @@ class DbHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "WSDatabase", null, 
         private var instance: DbHelper? = null
 
         @Synchronized
-        fun getDatabase(ctx: Context): DbHelper {
+        fun getInstance(ctx: Context): DbHelper {
             if (instance == null) {
                 instance = DbHelper(ctx)
             }
-            Log.v(this.toString(), "${instance == null}")
             return instance!!
         }
     }
@@ -33,6 +32,9 @@ class DbHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "WSDatabase", null, 
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.dropTable(DbEntry.SENSOR_NAME, true)
+        db.dropTable(DbEntry.SENSOR_DATABASE, true)
     }
 }
+
+val Context.database: DbHelper
+    get() = DbHelper.getInstance(applicationContext)
