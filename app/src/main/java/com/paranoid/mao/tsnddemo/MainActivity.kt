@@ -14,14 +14,12 @@ import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService.LocalBinder
 import android.os.IBinder
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.startService
-import org.jetbrains.anko.stopService
-import org.jetbrains.anko.toast
+import org.jetbrains.anko.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_ENABLE_BT = 101
         private const val REQUEST_WRITE_PERMISSION = 102
+        private const val REQUEST_MANAGE = 103
     }
 
     private var sensorCommunicationService: SensorCommunicationService? = null
@@ -43,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         requestPermission()
 
         supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, SensorControlFragment())
+                .replace(R.id.fragment_container, SensorControlFragment(), SensorControlFragment::javaClass.name)
                 .commit()
     }
 
@@ -58,11 +57,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
-            Toast.makeText(this, R.string.msg_need_bluetooth, Toast.LENGTH_SHORT).show()
-            finish()
+        when (requestCode) {
+            REQUEST_ENABLE_BT -> {
+                if (resultCode == Activity.RESULT_CANCELED) {
+                    Toast.makeText(this, R.string.msg_need_bluetooth, Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
         }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
