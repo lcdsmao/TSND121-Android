@@ -27,6 +27,7 @@ import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.ctx
 import org.jetbrains.anko.support.v4.dip
+import org.jetbrains.anko.support.v4.toast
 
 /**
  * A placeholder fragment containing a simple view.
@@ -46,15 +47,17 @@ class SensorManageFragment : Fragment() {
         alert {
             var nameEdit: TextInputEditText? = null
             var macEdit: TextInputEditText? = null
-            titleResource = R.string.add_sensor
+            titleResource = if (oldInfo == null) R.string.add_sensor else R.string.modify_sensor
             customView {
                 verticalLayout {
+                    // Name input
                     textInputLayout {
                         nameEdit = textInputEditText {
                             setText(oldInfo?.name)
                              hintResource = R.string.add_sensor_name
                         }
                     }
+                    // Address input
                     textInputLayout {
                         macEdit = textInputEditText {
                             setText((oldInfo?.mac))
@@ -67,27 +70,37 @@ class SensorManageFragment : Fragment() {
                     }
                 }
             }
-            yesButton {
+            // Save
+            positiveButton(R.string.save) {
                 val name = nameEdit?.text.toString()
                 val mac = macEdit?.text.toString()
+                if (!isIllegalMAC(mac)) {
+                    toast(R.string.illegal)
+                    return@positiveButton
+                }
                 if (oldInfo == null) {
                     val info = SensorInfo(0, name, mac, false)
                     adapter?.apply {
                         sensorInfoList.add(info)
                         notifyItemInserted(itemCount - 1)
-                        DbManager(ctx).insert(info)
                     }
                 } else {
                     val info = SensorInfo(oldInfo.id, name, mac, false)
                     adapter?.apply {
                         sensorInfoList[position] = info
                         notifyItemChanged(position)
-                        DbManager(ctx).update(info)
                     }
                 }
-
             }
-            noButton {}
+            // Delete
+            negativeButton(R.string.delete) {
+                oldInfo?.let {
+                    adapter?.apply {
+                        sensorInfoList.removeAt(position)
+                        notifyItemChanged(position)
+                    }
+                }
+            }
         }.show()
     }
 
@@ -99,6 +112,9 @@ class SensorManageFragment : Fragment() {
 //            }
 //        }
     }
+
+    private fun isIllegalMAC(mac: String): Boolean =
+            mac.matches(Regex("^([0-9A-F]{2}:){5}([0-9A-F]{2})$"))
 
     inner class SensorEditFragmentUI : AnkoComponent<SensorManageFragment> {
         override fun createView(ui: AnkoContext<SensorManageFragment>) = with(ui) {

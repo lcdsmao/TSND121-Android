@@ -27,4 +27,8 @@
     <string name="add_sensor">Add Sensor</string>
     <string name="add_sensor_name">Name</string>
     <string name="add_sensor_mac">MAC address</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="modify_sensor">Modify Sensor</string>
+    <string name="illegal">Illegal Mac Address!</string>
 </resources>

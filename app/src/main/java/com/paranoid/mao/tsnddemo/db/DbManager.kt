@@ -39,8 +39,14 @@ class DbManager(private val ctx: Context) {
     fun delete(info: SensorInfo): Int {
         return ctx.database.use {
             delete(DbEntry.SENSOR_DATABASE,
-                    "",
+                    "id = {${DbEntry.SENSOR_ID}}",
                     DbEntry.SENSOR_ID to info.id)
+        }
+    }
+
+    fun deleteAll(): Int {
+        return ctx.database.use {
+            delete(DbEntry.SENSOR_DATABASE)
         }
     }
 
@@ -53,6 +59,12 @@ class DbManager(private val ctx: Context) {
                     DbEntry.SENSOR_STATUS to info.enableStatus)
         }
         return id.toInt()
+    }
+
+    fun insertList(infos: List<SensorInfo>) {
+        infos.forEach {
+            insert(it)
+        }
     }
 
     private fun isIllegalMAC(mac: String): Boolean =
