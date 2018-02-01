@@ -5,14 +5,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Switch
 import com.jakewharton.rxbinding2.view.RxView
 import com.jakewharton.rxbinding2.view.activated
+import com.jakewharton.rxbinding2.view.enabled
+import com.jakewharton.rxbinding2.widget.checked
 import com.paranoid.mao.tsnddemo.events.ConnectionEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
+import org.jetbrains.anko.find
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
@@ -30,13 +34,15 @@ class EnabledSensorListAdapter(private val disposable: CompositeDisposable) : Re
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.sensor_list_item, parent, false)
+        val switch = view.find<Switch>(R.id.sensorSwitch)
         val holder = ViewHolder(view)
 
         // Set click listener
-        val clickDisposable = RxView.clicks(view)
+        val clickDisposable = RxView.clicks(switch)
                 .subscribeOn(AndroidSchedulers.mainThread())
-                .throttleFirst(2, TimeUnit.SECONDS)
-                .map { !view.isActivated }
+//                .throttleFirst(2, TimeUnit.SECONDS)
+                .map { switch.isChecked }
+                .doOnNext { switch.isEnabled = false }
                 .observeOn(Schedulers.newThread())
                 .subscribe {
                     val command = if (it) ConnectionEvent.CONNECT else ConnectionEvent.DISCONNECT
@@ -49,7 +55,10 @@ class EnabledSensorListAdapter(private val disposable: CompositeDisposable) : Re
                 .filter { it.command == ConnectionEvent.STATUS && it.info == sensorInfoList[holder.adapterPosition] }
                 .map { it.isConnect }
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(view.activated())
+                .subscribe {
+                    switch.isChecked = it
+                    switch.isEnabled = true
+                }
         disposable.add(busDisposable)
         return holder
     }
@@ -68,6 +77,7 @@ class EnabledSensorListAdapter(private val disposable: CompositeDisposable) : Re
             sensorNameTextView.text = info.name
             sensorMACTextView.text = info.mac
             sensorCheck.visibility = View.GONE
+            sensorSwitch.visibility = View.VISIBLE
         }
     }
 }

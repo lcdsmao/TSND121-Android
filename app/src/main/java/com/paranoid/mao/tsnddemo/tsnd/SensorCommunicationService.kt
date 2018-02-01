@@ -62,9 +62,8 @@ class SensorCommunicationService : Service() {
         if (sensorMap[info] == null) sensorMap[info] = SensorService(info.name, info.mac)
         doAsync {
             val isConnect = sensorMap[info]?.connect()?: false
-            if (isConnect) {
-                sendStatus(info)
-            } else {
+            sendStatus(info)
+            if (!isConnect) {
                 sensorMap.remove(info)
             }
         }

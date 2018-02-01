@@ -56,6 +56,7 @@ class AllSensorListAdapter(val sensorInfoList: MutableList<SensorInfo>)
             sensorMACTextView.text = info.mac
             sensorCheck.visibility = View.VISIBLE
             sensorCheck.isChecked = info.enableStatus
+            sensorSwitch.visibility = View.GONE
         }
     }
 }
