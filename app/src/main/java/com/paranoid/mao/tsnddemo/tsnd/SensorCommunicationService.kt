@@ -4,7 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.*
 import com.paranoid.mao.tsnddemo.RxBus
-import com.paranoid.mao.tsnddemo.events.SensorConnectionEvent
+import com.paranoid.mao.tsnddemo.events.ConnectionEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
 import org.jetbrains.anko.doAsync
 
@@ -22,14 +22,14 @@ class SensorCommunicationService : Service() {
 //    private val prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE)
 
     private val sensorMap = mutableMapOf<SensorInfo, SensorService>()
-    private val disposable = RxBus.listen(SensorConnectionEvent::class.java)
+    private val disposable = RxBus.listen(ConnectionEvent::class.java)
             .subscribe {
                 when(it.command) {
-                    SensorConnectionEvent.CONNECT -> connect(it.info)
-                    SensorConnectionEvent.DISCONNECT -> disConnect(it.info)
-                    SensorConnectionEvent.START -> startMeasure(it.info)
-                    SensorConnectionEvent.STOP -> stopMeasure(it.info)
-                    SensorConnectionEvent.REQUEST_STATUS -> sendStatus(it.info)
+                    ConnectionEvent.CONNECT -> connect(it.info)
+                    ConnectionEvent.DISCONNECT -> disConnect(it.info)
+                    ConnectionEvent.START -> startMeasure(it.info)
+                    ConnectionEvent.STOP -> stopMeasure(it.info)
+                    ConnectionEvent.REQUEST_STATUS -> sendStatus(it.info)
                 }
             }
 
@@ -48,7 +48,7 @@ class SensorCommunicationService : Service() {
 
     private fun sendStatus(info: SensorInfo) {
         sensorMap[info]?.let { sensorManager ->
-            RxBus.publish(SensorConnectionEvent(SensorConnectionEvent.STATUS, info, sensorManager.isConnected, sensorManager.isMeasuring))
+            RxBus.publish(ConnectionEvent(ConnectionEvent.STATUS, info, sensorManager.isConnected, sensorManager.isMeasuring))
         }
     }
 

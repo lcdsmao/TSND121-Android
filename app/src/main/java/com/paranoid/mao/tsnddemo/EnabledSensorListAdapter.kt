@@ -1,22 +1,15 @@
 package com.paranoid.mao.tsnddemo
 
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.Toast
 import com.jakewharton.rxbinding2.view.activated
-import com.paranoid.mao.tsnddemo.events.SensorConnectionEvent
+import com.paranoid.mao.tsnddemo.events.ConnectionEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
-import org.jetbrains.anko.find
 
 /**
  * Created by Paranoid on 1/25/18.
@@ -25,7 +18,6 @@ class EnabledSensorListAdapter(val disposable: CompositeDisposable) : RecyclerVi
 
     var sensorInfoList: List<SensorInfo> = mutableListOf()
         set(value) {
-            Log.v("SensorInfo", "list update")
             field = value
             notifyDataSetChanged()
         }
@@ -34,8 +26,9 @@ class EnabledSensorListAdapter(val disposable: CompositeDisposable) : RecyclerVi
         val view = LayoutInflater.from(parent.context).inflate(R.layout.sensor_list_item, parent, false)
         val holder = ViewHolder(view)
 
-        val busDisposable = RxBus.listen(SensorConnectionEvent::class.java)
-                .filter { it.command == SensorConnectionEvent.STATUS && it.info == sensorInfoList[holder.adapterPosition] }
+        // Set listener
+        val busDisposable = RxBus.listen(ConnectionEvent::class.java)
+                .filter { it.command == ConnectionEvent.STATUS && it.info == sensorInfoList[holder.adapterPosition] }
                 .map { it.isConnect }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(holder.itemView.activated())
@@ -46,6 +39,8 @@ class EnabledSensorListAdapter(val disposable: CompositeDisposable) : RecyclerVi
     override fun getItemCount(): Int = sensorInfoList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        // Request status
+        RxBus.publish(ConnectionEvent(ConnectionEvent.REQUEST_STATUS, sensorInfoList[position]))
         holder.bind(sensorInfoList[position])
     }
 

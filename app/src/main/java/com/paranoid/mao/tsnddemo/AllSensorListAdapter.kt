@@ -1,26 +1,14 @@
 package com.paranoid.mao.tsnddemo
 
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.ImageView
-import android.widget.Toast
 import com.jakewharton.rxbinding2.view.RxView
-import com.jakewharton.rxbinding2.view.activated
-import com.paranoid.mao.tsnddemo.events.SensorConnectionEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.toMaybe
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
-import kotlinx.coroutines.experimental.async
-import org.jetbrains.anko.AnkoComponent
 import org.jetbrains.anko.find
 
 /**
