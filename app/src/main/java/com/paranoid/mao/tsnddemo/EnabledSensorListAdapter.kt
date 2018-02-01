@@ -29,6 +29,15 @@ class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposa
             field = Collections.synchronizedList(value)
             notifyDataSetChanged()
         }
+    
+    init {
+        compositeDisposable += RxBus.listen(List::class.java)
+                .map { it.filterIsInstance<SensorInfo>() }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    sensorInfoList = it
+                }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.sensor_list_item, parent, false)
@@ -36,7 +45,7 @@ class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposa
         val holder = ViewHolder(view)
 
         // Set click listener
-        val clickDisposable = RxView.clicks(switch)
+        compositeDisposable += RxView.clicks(switch)
                 .subscribeOn(AndroidSchedulers.mainThread())
 //                .throttleFirst(2, TimeUnit.SECONDS)
                 .map { switch.isChecked }
@@ -46,10 +55,9 @@ class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposa
                     val command = if (it) Command.CONNECT else Command.DISCONNECT
                     RxBus.publish(ConnectionEvent(command, sensorInfoList[holder.adapterPosition]))
                 }
-        compositeDisposable.add(clickDisposable)
 
         // Set state listener
-        val connectDisposable = RxBus.listen(ConnectionEvent::class.java)
+        compositeDisposable += RxBus.listen(ConnectionEvent::class.java)
                 .filter { it.command == Command.STATUS && it.info == sensorInfoList[holder.adapterPosition] }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
@@ -57,16 +65,14 @@ class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposa
                     switch.isEnabled = true
                     view.isActivated = it.isMeasuring
                 }
-        compositeDisposable.add(connectDisposable)
 
         // Set measure listener
-        val measureDisposable = RxBus.listen(MeasureEvent::class.java)
+        compositeDisposable += RxBus.listen(MeasureEvent::class.java)
                 .filter { it.command == Command.STATUS }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     switch.isEnabled = !it.isAnyMeasuring
                 }
-        compositeDisposable.add(measureDisposable)
         return holder
     }
 

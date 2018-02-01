@@ -116,6 +116,7 @@ class SensorManageFragment : Fragment() {
                 adapter?.sensorInfoList?.toList()?.let {
                     deleteAll()
                     insertList(it)
+                    RxBus.publish(it)
                 }
             }
         }

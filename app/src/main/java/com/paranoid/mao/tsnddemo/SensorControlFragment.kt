@@ -36,17 +36,13 @@ class SensorControlFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        reloadList()
+        RxBus.publish(DbManager(ctx).loadEnabledSensorInfo())
         return SensorListFragmentUI().createView(AnkoContext.create(ctx, this))
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         compositeDisposable.dispose()
-    }
-
-    fun reloadList() {
-        listAdapter.sensorInfoList = DbManager(ctx).loadEnabledSensorInfo()
     }
 
     inner class SensorListFragmentUI : AnkoComponent<SensorControlFragment> {
@@ -84,9 +80,5 @@ class SensorControlFragment : Fragment() {
                 }
             }
         }
-    }
-
-    operator fun CompositeDisposable.plusAssign(disposable: Disposable) {
-        this.add(disposable)
     }
 }
