@@ -7,10 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
 import com.jakewharton.rxbinding2.view.RxView
-import com.jakewharton.rxbinding2.view.activated
-import com.jakewharton.rxbinding2.view.enabled
-import com.jakewharton.rxbinding2.widget.checked
+import com.paranoid.mao.tsnddemo.events.Command
 import com.paranoid.mao.tsnddemo.events.ConnectionEvent
+import com.paranoid.mao.tsnddemo.events.MeasureEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -18,13 +17,12 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
 import org.jetbrains.anko.find
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 /**
  * Created by Paranoid on 1/25/18.
  */
-class EnabledSensorListAdapter(private val disposable: CompositeDisposable) : RecyclerView.Adapter<EnabledSensorListAdapter.ViewHolder>() {
+class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposable) : RecyclerView.Adapter<EnabledSensorListAdapter.ViewHolder>() {
 
     var sensorInfoList: List<SensorInfo> = Collections.synchronizedList(ArrayList())
         set(value) {
@@ -45,21 +43,30 @@ class EnabledSensorListAdapter(private val disposable: CompositeDisposable) : Re
                 .doOnNext { switch.isEnabled = false }
                 .observeOn(Schedulers.newThread())
                 .subscribe {
-                    val command = if (it) ConnectionEvent.CONNECT else ConnectionEvent.DISCONNECT
+                    val command = if (it) Command.CONNECT else Command.DISCONNECT
                     RxBus.publish(ConnectionEvent(command, sensorInfoList[holder.adapterPosition]))
                 }
-        disposable.add(clickDisposable)
+        compositeDisposable.add(clickDisposable)
 
         // Set state listener
-        val busDisposable = RxBus.listen(ConnectionEvent::class.java)
-                .filter { it.command == ConnectionEvent.STATUS && it.info == sensorInfoList[holder.adapterPosition] }
-                .map { it.isConnect }
+        val connectDisposable = RxBus.listen(ConnectionEvent::class.java)
+                .filter { it.command == Command.STATUS && it.info == sensorInfoList[holder.adapterPosition] }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
-                    switch.isChecked = it
+                    switch.isChecked = it.isConnect
                     switch.isEnabled = true
+                    view.isActivated = it.isMeasuring
                 }
-        disposable.add(busDisposable)
+        compositeDisposable.add(connectDisposable)
+
+        // Set measure listener
+        val measureDisposable = RxBus.listen(MeasureEvent::class.java)
+                .filter { it.command == Command.STATUS }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    switch.isEnabled = !it.isAnyMeasuring
+                }
+        compositeDisposable.add(measureDisposable)
         return holder
     }
 
@@ -68,7 +75,8 @@ class EnabledSensorListAdapter(private val disposable: CompositeDisposable) : Re
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // Request status
         Log.v("Bind", "$position")
-        RxBus.publish(ConnectionEvent(ConnectionEvent.REQUEST_STATUS, sensorInfoList[position]))
+        RxBus.publish(ConnectionEvent(Command.REQUEST_STATUS, sensorInfoList[position]))
+        RxBus.publish(MeasureEvent(Command.REQUEST_STATUS))
         holder.bind(sensorInfoList[position])
     }
 

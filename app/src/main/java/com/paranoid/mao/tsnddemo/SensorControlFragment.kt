@@ -11,14 +11,20 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.jakewharton.rxbinding2.view.RxView
 import com.paranoid.mao.tsnddemo.db.DbManager
+import com.paranoid.mao.tsnddemo.events.Command
 import com.paranoid.mao.tsnddemo.events.ConnectionEvent
+import com.paranoid.mao.tsnddemo.events.MeasureEvent
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.ctx
+import java.util.concurrent.TimeUnit
 
 /**
  * A simple [Fragment] subclass.
@@ -30,13 +36,17 @@ class SensorControlFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        listAdapter.sensorInfoList = DbManager(ctx).loadEnabledSensorInfo()
+        reloadList()
         return SensorListFragmentUI().createView(AnkoContext.create(ctx, this))
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         compositeDisposable.dispose()
+    }
+
+    fun reloadList() {
+        listAdapter.sensorInfoList = DbManager(ctx).loadEnabledSensorInfo()
     }
 
     inner class SensorListFragmentUI : AnkoComponent<SensorControlFragment> {
@@ -54,18 +64,29 @@ class SensorControlFragment : Fragment() {
                 // float
                 floatingActionButton {
                     size = FloatingActionButton.SIZE_NORMAL
-                    setImageResource(R.drawable.ic_play_arrow)
-                    setOnClickListener {
-                        listAdapter.sensorInfoList.forEach {
-                            val event = ConnectionEvent(ConnectionEvent.CONNECT, it)
-                            RxBus.publish(event)
-                        }
-                    }
+                    setImageResource(R.drawable.ic_measure)
+                    // Set click
+                    compositeDisposable += RxView.clicks(this)
+                            .throttleFirst(500, TimeUnit.MILLISECONDS)
+                            .subscribe { RxBus.publish(MeasureEvent(Command.MEASURE)) }
+                    // Listen to change icon
+                    compositeDisposable += RxBus.listen(MeasureEvent::class.java)
+                            .filter { it.command == Command.STATUS }
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe {
+                                val resIcon = if (it.isAnyMeasuring) R.drawable.ic_measure_stop else R.drawable.ic_measure
+                                setImageResource(resIcon)
+                            }
+                    RxBus.publish(MeasureEvent(Command.REQUEST_STATUS))
                 }.lparams {
                     gravity = Gravity.END or Gravity.BOTTOM
                     margin = dip(16)
                 }
             }
         }
+    }
+
+    operator fun CompositeDisposable.plusAssign(disposable: Disposable) {
+        this.add(disposable)
     }
 }

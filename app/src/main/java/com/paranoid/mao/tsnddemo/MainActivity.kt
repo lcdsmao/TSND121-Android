@@ -14,7 +14,6 @@ import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService.LocalBinder
 import android.os.IBinder
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -126,7 +125,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return when(item?.itemId) {
             R.id.manage_menu -> {
-                if (bound && sensorCommunicationService?.isNoConnection == true) {
+                if (bound && sensorCommunicationService?.isNoConnected == true) {
                     startActivity<ManageActivity>()
                     true
                 } else {
