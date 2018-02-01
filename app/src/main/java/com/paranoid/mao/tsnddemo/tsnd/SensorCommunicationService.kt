@@ -3,17 +3,15 @@ package com.paranoid.mao.tsnddemo.tsnd
 import android.app.Service
 import android.content.Intent
 import android.os.*
+import android.util.Log
 import com.paranoid.mao.tsnddemo.RxBus
 import com.paranoid.mao.tsnddemo.events.ConnectionEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
 import org.jetbrains.anko.doAsync
+import java.util.*
+import kotlin.collections.HashMap
 
 class SensorCommunicationService : Service() {
-
-    companion object {
-        const val ACTION_STOP_MEASURE = "Stop Measure"
-        const val ACTION_DISCONNECT = "Disconnect"
-    }
 
     private val binder: IBinder = LocalBinder()
 //    private val sensorService = SensorService("Test", "00:07:80:76:87:6E")
@@ -21,7 +19,7 @@ class SensorCommunicationService : Service() {
 //    private val sensorRight = SensorService("right", "00:07:80:76:8E:B1")
 //    private val prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE)
 
-    private val sensorMap = mutableMapOf<SensorInfo, SensorService>()
+    private val sensorMap = Collections.synchronizedMap<SensorInfo, SensorService>(HashMap())
     private val disposable = RxBus.listen(ConnectionEvent::class.java)
             .subscribe {
                 when(it.command) {
@@ -32,6 +30,13 @@ class SensorCommunicationService : Service() {
                     ConnectionEvent.REQUEST_STATUS -> sendStatus(it.info)
                 }
             }
+
+    var isNoConnection: Boolean = true
+        private set
+        get() = sensorMap.isEmpty()
+    var numOfConnected: Int = 0
+        private set
+        get() = sensorMap.size
 
     inner class LocalBinder: Binder() {
         fun getService(): SensorCommunicationService = this@SensorCommunicationService
@@ -47,6 +52,7 @@ class SensorCommunicationService : Service() {
     }
 
     private fun sendStatus(info: SensorInfo) {
+        Log.v("info", "${info.toString()}, ${sensorMap[info].toString()}, ${sensorMap.size}")
         sensorMap[info]?.let { sensorManager ->
             RxBus.publish(ConnectionEvent(ConnectionEvent.STATUS, info, sensorManager.isConnected, sensorManager.isMeasuring))
         }
