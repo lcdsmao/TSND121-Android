@@ -3,7 +3,9 @@ package com.paranoid.mao.tsnddemo
 
 import android.graphics.Color
 import android.os.Bundle
+import android.support.annotation.ColorInt
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,46 +13,78 @@ import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.LegendRenderer
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
+import com.jjoe64.graphview.DefaultLabelFormatter
+import java.text.NumberFormat
+
 
 /**
  * A simple [Fragment] subclass.
  */
 class RealtimeGraphFragment : Fragment() {
 
-    private val dataSeriesX = LineGraphSeries<DataPoint>().apply { title = "X"; color = Color.RED }
-    private val dataSeriesY = LineGraphSeries<DataPoint>().apply { title = "Y"; color = Color.GREEN }
-    private val dataSeriesZ = LineGraphSeries<DataPoint>().apply { title = "Z"; color = Color.BLUE }
+    private val dataSeriesX = LineGraphSeries<DataPoint>().apply {
+        title = "X"
+        color = 0xFFF8766D.toInt()
+        thickness = 2
+    }
+    private val dataSeriesY = LineGraphSeries<DataPoint>().apply {
+        title = "Y"
+        color = 0xFF00B0F6.toInt()
+        thickness = 2
+    }
+    private val dataSeriesZ = LineGraphSeries<DataPoint>().apply {
+        title = "Z"
+        color = 0xFF6BB100.toInt()
+        thickness = 2
+    }
+
+    companion object {
+        fun newInstance(title: String, minY: Double, maxY: Double): RealtimeGraphFragment {
+            val bundle = Bundle()
+            bundle.putDouble("minY", minY)
+            bundle.putDouble("maxY", maxY)
+            bundle.putString("title", title)
+            val fragment = RealtimeGraphFragment()
+            fragment.arguments = bundle
+            return fragment
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_realtime_graph, container, false)
+
+        val minY = arguments.getDouble("minY")
+        val maxY = arguments.getDouble("maxY")
+        val title = arguments.getString("title")
 
         val graphView = view.findViewById<GraphView>(R.id.graphView)
         graphView.apply {
             addSeries(dataSeriesX)
             addSeries(dataSeriesY)
             addSeries(dataSeriesZ)
+            setTitle(title)
             viewport.isXAxisBoundsManual = true
             viewport.isYAxisBoundsManual = true
             viewport.setMinX(0.0)
-            viewport.setMaxX(10.0)
-            viewport.setMinY(-6.0)
-            viewport.setMaxY(6.0)
+            viewport.setMaxX(5.0)
+            viewport.setMinY(minY)
+            viewport.setMaxY(maxY)
 //            viewport.isScrollable = true
             legendRenderer.isVisible = true
             legendRenderer.align = LegendRenderer.LegendAlign.TOP
-
+            gridLabelRenderer.isHorizontalLabelsVisible = false
         }
         return view
     }
 
-    fun addData(time: Int, dataX: Int, dataY: Int, dataZ: Int) {
+    fun addData(time: Double, dataX: Double, dataY: Double, dataZ: Double) {
         dataSeriesX.appendData(time, dataX)
         dataSeriesY.appendData(time, dataY)
         dataSeriesZ.appendData(time, dataZ)
     }
 
-    private fun LineGraphSeries<DataPoint>.appendData(time: Int, data: Int) {
-        appendData(DataPoint(time.toDouble() / 1000.0, data.toDouble() / 10000.0), true,  300)
+    private fun LineGraphSeries<DataPoint>.appendData(time: Double, data: Double) {
+        appendData(DataPoint(time, data), true,  100)
     }
 }

@@ -484,13 +484,13 @@ public class TSNDServiceImpl implements TSNDService {
 
         //加速度レンジ設定
         params = new byte[]{
-                3   //0:±2G,1:±4G,2:±8G,3:±16G
+                2   //0:±2G,1:±4G,2:±8G,3:±16G
         };
         sendCommand(COMMAND_ACC_RANGE_SETTING, params);
 
         //ジャイロレンジ設定
         params = new byte[]{
-                3   //0:±250dps,1:±500dps,2:±1000dps,3:±2000dp
+                2   //0:±250dps,1:±500dps,2:±1000dps,3:±2000dp
         };
         sendCommand(COMMAND_GYR_RANGE_SETTING, params);
 

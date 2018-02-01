@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo
+package com.paranoid.mao.tsnddemo.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import com.jakewharton.rxbinding2.view.RxView
+import com.paranoid.mao.tsnddemo.R
 import com.paranoid.mao.tsnddemo.model.SensorInfo
 import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
@@ -23,7 +24,9 @@ class AllSensorListAdapter(val sensorInfoList: MutableList<SensorInfo>)
         val view = LayoutInflater.from(parent.context).inflate(R.layout.sensor_list_item, parent, false)
         val holder = ViewHolder(view)
         view.find<CheckBox>(R.id.sensorCheck).setOnClickListener {
-            modify(holder.adapterPosition, 4, (it as CheckBox).isChecked)
+//            modify(holder.adapterPosition, 4, (it as CheckBox).isChecked)
+            val position = holder.adapterPosition
+            sensorInfoList[position] = sensorInfoList[position].copy(enableStatus = (it as CheckBox).isChecked)
         }
         RxView.clicks(view)
                 .subscribe {
@@ -38,17 +41,17 @@ class AllSensorListAdapter(val sensorInfoList: MutableList<SensorInfo>)
         holder.bind(sensorInfoList[position])
     }
 
-    fun modify(position: Int, compNum: Int, value: Any) {
-        var (id, name, mac, status) = sensorInfoList[position]
-        when(compNum) {
-            2 -> name = value.toString()
-            3 -> mac = value.toString()
-            4 -> status = value as? Boolean ?: false
-            else -> throw IllegalArgumentException()
-        }
-        sensorInfoList[position] = SensorInfo(id, name, mac, status)
-        notifyItemChanged(position)
-    }
+//    fun modify(position: Int, compNum: Int, value: Any) {
+//        var (id, name, mac, status) = sensorInfoList[position]
+//        when(compNum) {
+//            2 -> name = value.toString()
+//            3 -> mac = value.toString()
+//            4 -> status = value as? Boolean ?: false
+//            else -> throw IllegalArgumentException()
+//        }
+//        sensorInfoList[position] = SensorInfo(id, name, mac, status)
+//        notifyItemChanged(position)
+//    }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(info: SensorInfo) = with(itemView) {

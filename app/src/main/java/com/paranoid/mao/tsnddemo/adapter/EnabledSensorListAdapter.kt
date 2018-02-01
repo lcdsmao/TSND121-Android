@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo
+package com.paranoid.mao.tsnddemo.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -7,13 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
 import com.jakewharton.rxbinding2.view.RxView
+import com.paranoid.mao.tsnddemo.R
+import com.paranoid.mao.tsnddemo.RxBus
 import com.paranoid.mao.tsnddemo.events.Command
 import com.paranoid.mao.tsnddemo.events.ConnectionEvent
 import com.paranoid.mao.tsnddemo.events.MeasureEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
+import com.paranoid.mao.tsnddemo.plusAssign
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
 import org.jetbrains.anko.find
 import java.util.*
@@ -22,7 +26,9 @@ import kotlin.collections.ArrayList
 /**
  * Created by Paranoid on 1/25/18.
  */
-class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposable) : RecyclerView.Adapter<EnabledSensorListAdapter.ViewHolder>() {
+class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposable,
+                               private val clickSubject: PublishSubject<SensorInfo>)
+    : RecyclerView.Adapter<EnabledSensorListAdapter.ViewHolder>() {
 
     var sensorInfoList: List<SensorInfo> = Collections.synchronizedList(ArrayList())
         set(value) {
@@ -44,7 +50,13 @@ class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposa
         val switch = view.find<Switch>(R.id.sensorSwitch)
         val holder = ViewHolder(view)
 
-        // Set click listener
+        RxView.clicks(view)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .map { sensorInfoList[holder.adapterPosition] }
+                .observeOn(Schedulers.newThread())
+                .subscribe(clickSubject)
+
+        // Set switch listener
         compositeDisposable += RxView.clicks(switch)
                 .subscribeOn(AndroidSchedulers.mainThread())
 //                .throttleFirst(2, TimeUnit.SECONDS)

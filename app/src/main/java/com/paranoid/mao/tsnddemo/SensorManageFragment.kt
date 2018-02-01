@@ -10,11 +10,11 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.paranoid.mao.tsnddemo.adapter.AllSensorListAdapter
 import com.paranoid.mao.tsnddemo.db.DbManager
 import com.paranoid.mao.tsnddemo.model.SensorInfo
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.subjects.PublishSubject
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
@@ -116,7 +116,7 @@ class SensorManageFragment : Fragment() {
                 adapter?.sensorInfoList?.toList()?.let {
                     deleteAll()
                     insertList(it)
-                    RxBus.publish(it)
+                    RxBus.publish(loadEnabledSensorInfo())
                 }
             }
         }

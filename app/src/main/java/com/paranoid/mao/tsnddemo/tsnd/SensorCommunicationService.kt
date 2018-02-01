@@ -54,6 +54,8 @@ class SensorCommunicationService : Service() {
         fun getService(): SensorCommunicationService = this@SensorCommunicationService
     }
 
+    fun getSensorServiceFromId(id: Int): SensorService? = sensorMap.mapKeys { it.key.id } [id]
+
     override fun onBind(intent: Intent): IBinder? {
         return binder
     }

@@ -12,18 +12,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.jakewharton.rxbinding2.view.RxView
+import com.paranoid.mao.tsnddemo.adapter.EnabledSensorListAdapter
 import com.paranoid.mao.tsnddemo.db.DbManager
 import com.paranoid.mao.tsnddemo.events.Command
-import com.paranoid.mao.tsnddemo.events.ConnectionEvent
 import com.paranoid.mao.tsnddemo.events.MeasureEvent
+import com.paranoid.mao.tsnddemo.model.SensorInfo
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
+import io.reactivex.subjects.PublishSubject
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.ctx
+import org.jetbrains.anko.support.v4.startActivity
 import java.util.concurrent.TimeUnit
 
 /**
@@ -31,12 +33,17 @@ import java.util.concurrent.TimeUnit
  */
 class SensorControlFragment : Fragment() {
 
-    private var compositeDisposable = CompositeDisposable()
-    private val listAdapter = EnabledSensorListAdapter(compositeDisposable)
+    private val compositeDisposable = CompositeDisposable()
+    private val clickSubject = PublishSubject.create<SensorInfo>()
+    private val listAdapter = EnabledSensorListAdapter(compositeDisposable, clickSubject)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         RxBus.publish(DbManager(ctx).loadEnabledSensorInfo())
+        compositeDisposable += clickSubject
+                .subscribe {
+                    startActivity<GraphActivity>("id" to it.id)
+                }
         return SensorListFragmentUI().createView(AnkoContext.create(ctx, this))
     }
 
