@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/manage"
+        android:id="@+id/manage_menu"
         android:title="@string/manage_sensor"
         android:icon="@drawable/ic_build"
         app:showAsAction="always"/>

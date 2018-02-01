@@ -15,23 +15,13 @@ import android.os.IBinder
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.view.Menu
-import android.view.MenuInflater
-import android.view.View
+import android.view.MenuItem
 import android.widget.Toast
-import com.jakewharton.rxbinding2.support.v7.widget.RxRecyclerView
-import com.jakewharton.rxbinding2.support.v7.widget.RxRecyclerViewAdapter
-import com.jakewharton.rxbinding2.view.RxView
-import com.paranoid.mao.tsnddemo.db.*
-import com.paranoid.mao.tsnddemo.model.SensorInfo
 import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
-import io.reactivex.ObservableOnSubscribe
-import kotlinx.android.synthetic.main.sensor_list_item.*
-import org.jetbrains.anko.ctx
-import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
+import org.jetbrains.anko.toast
 
 
 class MainActivity : AppCompatActivity() {
@@ -127,7 +117,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
-        menu?.findItem(R.id.manage)?.intent = Intent(ctx, ManageActivity::class.java)
-        return super.onCreateOptionsMenu(menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when(item?.itemId) {
+            R.id.manage_menu -> {
+                if (bound && sensorCommunicationService?.isNoConnection == true) {
+                    startActivity<ManageActivity>()
+                    true
+                } else {
+                    toast(R.string.open_manage_alert)
+                    false
+                }
+            }
+            else -> false
+        }
     }
 }
