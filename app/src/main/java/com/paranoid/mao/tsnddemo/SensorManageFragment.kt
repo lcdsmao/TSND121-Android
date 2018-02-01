@@ -10,23 +10,19 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import com.paranoid.mao.tsnddemo.db.DbEntry
 import com.paranoid.mao.tsnddemo.db.DbManager
-import com.paranoid.mao.tsnddemo.db.database
 import com.paranoid.mao.tsnddemo.model.SensorInfo
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import org.jetbrains.anko.*
-import org.jetbrains.anko.db.dropTable
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.textInputEditText
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
-import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.ctx
-import org.jetbrains.anko.support.v4.dip
 import org.jetbrains.anko.support.v4.toast
 
 /**
@@ -35,15 +31,23 @@ import org.jetbrains.anko.support.v4.toast
 class SensorManageFragment : Fragment() {
 
     private var adapter: AllSensorListAdapter? = null
-    private val subject = PublishSubject.create<Int>()
+    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        adapter = AllSensorListAdapter(subject, DbManager(ctx).loadSensorInfo().toMutableList())
+        adapter = AllSensorListAdapter(DbManager(ctx).loadSensorInfo().toMutableList())
+                .apply {
+                    val disposable = subject
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe { position ->
+                                showEditDialog(position, sensorInfoList[position])
+                            }
+                    compositeDisposable.add(disposable)
+                }
         return SensorEditFragmentUI().createView(AnkoContext.create(ctx, this))
     }
 
-    private fun modifyData(position: Int = 0, oldInfo: SensorInfo? = null) {
+    private fun showEditDialog(position: Int = 0, oldInfo: SensorInfo? = null) {
         alert {
             var nameEdit: TextInputEditText? = null
             var macEdit: TextInputEditText? = null
@@ -106,11 +110,15 @@ class SensorManageFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-//        adapter?.sensorInfoList?.forEach {
-//            doAsync {
-//                DbManager(ctx).insert(it)
-//            }
-//        }
+        compositeDisposable.dispose()
+        doAsync {
+            DbManager(ctx).apply {
+                adapter?.sensorInfoList?.toList()?.let {
+                    deleteAll()
+                    insertList(it)
+                }
+            }
+        }
     }
 
     private fun isIllegalMAC(mac: String): Boolean =
@@ -130,7 +138,7 @@ class SensorManageFragment : Fragment() {
                 floatingActionButton {
                     imageResource = R.drawable.ic_add
                     size = FloatingActionButton.SIZE_NORMAL
-                    setOnClickListener { modifyData() }
+                    setOnClickListener { showEditDialog() }
                 }.lparams {
                     gravity = Gravity.END or Gravity.BOTTOM
                     margin = dip(16)

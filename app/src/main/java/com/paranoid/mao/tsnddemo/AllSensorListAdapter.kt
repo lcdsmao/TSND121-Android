@@ -26,9 +26,10 @@ import org.jetbrains.anko.find
 /**
  * Created by Paranoid on 1/25/18.
  */
-class AllSensorListAdapter(private val subject: PublishSubject<Int>,
-                           val sensorInfoList: MutableList<SensorInfo>)
+class AllSensorListAdapter(val sensorInfoList: MutableList<SensorInfo>)
     : RecyclerView.Adapter<AllSensorListAdapter.ViewHolder>() {
+
+    val subject = PublishSubject.create<Int>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.sensor_list_item, parent, false)
