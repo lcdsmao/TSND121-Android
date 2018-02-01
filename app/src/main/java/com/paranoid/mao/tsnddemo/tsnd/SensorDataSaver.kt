@@ -16,7 +16,7 @@ class SensorDataSaver(name: String = "") {
     private val csvFormat = SimpleCSVFormat(10)
 
     private var fileName: String = name
-          get() = dateFormat.format(Calendar.getInstance().time) + field + ".csv"
+          get() = "${dateFormat.format(Calendar.getInstance().time)}_$field.csv"
     private var sensorDataFile: File? = null
 
     init {
