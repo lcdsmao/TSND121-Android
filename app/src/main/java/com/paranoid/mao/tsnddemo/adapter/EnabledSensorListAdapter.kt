@@ -74,7 +74,7 @@ class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposa
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     switch.isChecked = it.isConnect
-                    switch.isEnabled = true
+                    switch.isEnabled = !it.isMeasuring
                     view.isActivated = it.isMeasuring
                 }
 
