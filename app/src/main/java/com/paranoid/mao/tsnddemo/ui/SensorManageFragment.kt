@@ -1,18 +1,20 @@
-package com.paranoid.mao.tsnddemo
+package com.paranoid.mao.tsnddemo.ui
 
-import android.support.v4.app.Fragment
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.TextInputEditText
+import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.paranoid.mao.tsnddemo.adapter.AllSensorListAdapter
-import com.paranoid.mao.tsnddemo.db.DbManager
+import com.paranoid.mao.tsnddemo.R
+import com.paranoid.mao.tsnddemo.RxBus
+import com.paranoid.mao.tsnddemo.data.DbManager
 import com.paranoid.mao.tsnddemo.model.SensorInfo
+import com.paranoid.mao.tsnddemo.ui.adapter.AllSensorListAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import org.jetbrains.anko.*
@@ -58,7 +60,7 @@ class SensorManageFragment : Fragment() {
                     textInputLayout {
                         nameEdit = textInputEditText {
                             setText(oldInfo?.name)
-                             hintResource = R.string.add_sensor_name
+                            hintResource = R.string.add_sensor_name
                         }
                     }
                     // Address input

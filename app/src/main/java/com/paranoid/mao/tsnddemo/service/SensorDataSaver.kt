@@ -1,6 +1,6 @@
-package com.paranoid.mao.tsnddemo.tsnd
+package com.paranoid.mao.tsnddemo.service
 
-import com.paranoid.mao.tsnddemo.csv.SimpleCSVFormat
+import com.paranoid.mao.tsnddemo.data.SimpleCSVFormat
 import com.paranoid.mao.tsnddemo.model.SensorData
 import java.io.File
 import java.text.SimpleDateFormat
@@ -16,7 +16,7 @@ class SensorDataSaver(name: String = "") {
     private val csvFormat = SimpleCSVFormat(10)
 
     private var fileName: String = name
-          get() = "${dateFormat.format(Calendar.getInstance().time)}_$field.csv"
+        get() = "${dateFormat.format(Calendar.getInstance().time)}_$field.csv"
     private var sensorDataFile: File? = null
 
     init {

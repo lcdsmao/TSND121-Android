@@ -1,11 +1,8 @@
-package com.paranoid.mao.tsnddemo
+package com.paranoid.mao.tsnddemo.ui
 
 
-import android.graphics.Color
 import android.os.Bundle
-import android.support.annotation.ColorInt
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,8 +10,7 @@ import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.LegendRenderer
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
-import com.jjoe64.graphview.DefaultLabelFormatter
-import java.text.NumberFormat
+import com.paranoid.mao.tsnddemo.R
 
 
 /**
@@ -85,6 +81,6 @@ class RealtimeGraphFragment : Fragment() {
     }
 
     private fun LineGraphSeries<DataPoint>.appendData(time: Double, data: Double) {
-        appendData(DataPoint(time, data), true,  100)
+        appendData(DataPoint(time, data), true, 100)
     }
 }

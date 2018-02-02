@@ -14,5 +14,5 @@ object RxBus {
         publishSubject.onNext(event)
     }
 
-    fun <T> listen(eventType: Class<T>) : Observable<T> = publishSubject.ofType(eventType)
+    fun <T> listen(eventType: Class<T>): Observable<T> = publishSubject.ofType(eventType)
 }

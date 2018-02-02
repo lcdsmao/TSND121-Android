@@ -1,8 +1,7 @@
-package com.paranoid.mao.tsnddemo.db
+package com.paranoid.mao.tsnddemo.data
 
 import android.content.Context
 import com.paranoid.mao.tsnddemo.model.SensorInfo
-import io.reactivex.subjects.PublishSubject
 import org.jetbrains.anko.db.*
 
 /**
@@ -10,17 +9,11 @@ import org.jetbrains.anko.db.*
  */
 class DbManager(private val ctx: Context) {
 
-    companion object {
-        val sensorListSubject = PublishSubject.create<List<SensorInfo>>()
-    }
-
     fun loadSensorInfo(): List<SensorInfo> {
-        val list = ctx.database.use {
+        return ctx.database.use {
             select(DbEntry.SENSOR_DATABASE)
-                    .parseList(classParser<SensorInfo>())
+                    .parseList(classParser())
         }
-        sensorListSubject.onNext(list)
-        return list
     }
 
     fun loadEnabledSensorInfo(): List<SensorInfo> {

@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.adapter
+package com.paranoid.mao.tsnddemo.ui.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -9,9 +9,9 @@ import android.widget.Switch
 import com.jakewharton.rxbinding2.view.RxView
 import com.paranoid.mao.tsnddemo.R
 import com.paranoid.mao.tsnddemo.RxBus
-import com.paranoid.mao.tsnddemo.events.Command
-import com.paranoid.mao.tsnddemo.events.ConnectionEvent
-import com.paranoid.mao.tsnddemo.events.MeasureEvent
+import com.paranoid.mao.tsnddemo.model.Command
+import com.paranoid.mao.tsnddemo.model.ConnectionEvent
+import com.paranoid.mao.tsnddemo.model.MeasureEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
 import com.paranoid.mao.tsnddemo.plusAssign
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -35,7 +35,7 @@ class EnabledSensorListAdapter(private val compositeDisposable: CompositeDisposa
             field = Collections.synchronizedList(value)
             notifyDataSetChanged()
         }
-    
+
     init {
         compositeDisposable += RxBus.listen(List::class.java)
                 .map { it.filterIsInstance<SensorInfo>() }

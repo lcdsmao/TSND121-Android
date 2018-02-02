@@ -1,8 +1,7 @@
-package com.paranoid.mao.tsnddemo.db
+package com.paranoid.mao.tsnddemo.data
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import android.util.Log
 import org.jetbrains.anko.db.*
 
 /**

@@ -1,24 +1,28 @@
-package com.paranoid.mao.tsnddemo
+package com.paranoid.mao.tsnddemo.ui
 
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.content.ServiceConnection
-import android.support.v7.app.AppCompatActivity
-import android.os.Bundle
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService.LocalBinder
+import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService
-import org.jetbrains.anko.*
+import com.paranoid.mao.tsnddemo.R
+import com.paranoid.mao.tsnddemo.service.SensorCommunicationService
+import com.paranoid.mao.tsnddemo.service.SensorCommunicationService.LocalBinder
+import org.jetbrains.anko.startActivity
+import org.jetbrains.anko.startService
+import org.jetbrains.anko.stopService
+import org.jetbrains.anko.toast
 
 
 class MainActivity : AppCompatActivity() {
@@ -123,7 +127,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when(item?.itemId) {
+        return when (item?.itemId) {
             R.id.manage_menu -> {
                 if (bound && sensorCommunicationService?.isNoConnected == true) {
                     startActivity<ManageActivity>()

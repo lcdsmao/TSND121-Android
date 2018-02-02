@@ -1,18 +1,16 @@
-package com.paranoid.mao.tsnddemo
+package com.paranoid.mao.tsnddemo.ui
 
 import android.app.Service
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
-import android.support.v4.app.Fragment
-import android.util.Log
+import android.support.v7.app.AppCompatActivity
+import com.paranoid.mao.tsnddemo.R
 import com.paranoid.mao.tsnddemo.model.SensorData
-import com.paranoid.mao.tsnddemo.model.SensorInfo
-import com.paranoid.mao.tsnddemo.tsnd.SensorCommunicationService
-import com.paranoid.mao.tsnddemo.tsnd.SensorService
+import com.paranoid.mao.tsnddemo.service.SensorCommunicationService
+import com.paranoid.mao.tsnddemo.service.SensorService
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -37,7 +35,7 @@ class GraphActivity : AppCompatActivity() {
         }
 
     private val flowable = Flowable.interval(200, TimeUnit.MILLISECONDS)
-            .map { sensorService?.data?:SensorData() }
+            .map { sensorService?.data ?: SensorData() }
     private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

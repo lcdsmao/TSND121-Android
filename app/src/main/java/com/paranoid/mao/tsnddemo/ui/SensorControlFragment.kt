@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo
+package com.paranoid.mao.tsnddemo.ui
 
 
 import android.os.Bundle
@@ -12,11 +12,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.jakewharton.rxbinding2.view.RxView
-import com.paranoid.mao.tsnddemo.adapter.EnabledSensorListAdapter
-import com.paranoid.mao.tsnddemo.db.DbManager
-import com.paranoid.mao.tsnddemo.events.Command
-import com.paranoid.mao.tsnddemo.events.MeasureEvent
+import com.paranoid.mao.tsnddemo.R
+import com.paranoid.mao.tsnddemo.RxBus
+import com.paranoid.mao.tsnddemo.data.DbManager
+import com.paranoid.mao.tsnddemo.model.Command
+import com.paranoid.mao.tsnddemo.model.MeasureEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
+import com.paranoid.mao.tsnddemo.plusAssign
+import com.paranoid.mao.tsnddemo.ui.adapter.EnabledSensorListAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject

@@ -1,6 +1,4 @@
-package com.paranoid.mao.tsnddemo.db
-
-import android.content.Context
+package com.paranoid.mao.tsnddemo.data
 
 /**
  * Created by Paranoid on 1/25/18.

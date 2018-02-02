@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.events
+package com.paranoid.mao.tsnddemo.model
 
 /**
  * Created by Paranoid on 2/1/18.

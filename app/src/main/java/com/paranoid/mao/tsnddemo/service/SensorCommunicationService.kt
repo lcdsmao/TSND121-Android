@@ -1,13 +1,14 @@
-package com.paranoid.mao.tsnddemo.tsnd
+package com.paranoid.mao.tsnddemo.service
 
 import android.app.Service
 import android.content.Intent
-import android.os.*
+import android.os.Binder
+import android.os.IBinder
 import android.util.Log
 import com.paranoid.mao.tsnddemo.RxBus
-import com.paranoid.mao.tsnddemo.events.Command
-import com.paranoid.mao.tsnddemo.events.ConnectionEvent
-import com.paranoid.mao.tsnddemo.events.MeasureEvent
+import com.paranoid.mao.tsnddemo.model.Command
+import com.paranoid.mao.tsnddemo.model.ConnectionEvent
+import com.paranoid.mao.tsnddemo.model.MeasureEvent
 import com.paranoid.mao.tsnddemo.model.SensorInfo
 import org.jetbrains.anko.doAsync
 import java.util.*
@@ -22,7 +23,7 @@ class SensorCommunicationService : Service() {
     private val sensorMap = Collections.synchronizedMap<SensorInfo, SensorService>(HashMap())
     private val connectDisposable = RxBus.listen(ConnectionEvent::class.java)
             .subscribe {
-                when(it.command) {
+                when (it.command) {
                     Command.CONNECT -> connect(it.info)
                     Command.DISCONNECT -> disConnect(it.info)
                     Command.REQUEST_STATUS -> sendStatus(it.info)
@@ -31,7 +32,7 @@ class SensorCommunicationService : Service() {
             }
     private val measureDisposable = RxBus.listen(MeasureEvent::class.java)
             .subscribe {
-                when(it.command) {
+                when (it.command) {
                     Command.MEASURE -> {
                         if (isAnyMeasuring) stopMeasureAll()
                         else startMeasureAll()
@@ -50,11 +51,11 @@ class SensorCommunicationService : Service() {
         private set
         get() = sensorMap.any { it.value.isMeasuring }
 
-    inner class LocalBinder: Binder() {
+    inner class LocalBinder : Binder() {
         fun getService(): SensorCommunicationService = this@SensorCommunicationService
     }
 
-    fun getSensorServiceFromId(id: Int): SensorService? = sensorMap.mapKeys { it.key.id } [id]
+    fun getSensorServiceFromId(id: Int): SensorService? = sensorMap.mapKeys { it.key.id }[id]
 
     override fun onBind(intent: Intent): IBinder? {
         return binder
@@ -74,7 +75,7 @@ class SensorCommunicationService : Service() {
     private fun connect(info: SensorInfo) {
         if (sensorMap[info] == null) sensorMap[info] = SensorService(info.name, info.mac)
         doAsync {
-            val isConnect = sensorMap[info]?.connect()?: false
+            val isConnect = sensorMap[info]?.connect() ?: false
             sendStatus(info)
             if (!isConnect) {
                 sensorMap.remove(info)
@@ -128,7 +129,7 @@ class SensorCommunicationService : Service() {
     }
 
     private fun disConnectAll() {
-        sensorMap.keys.toList().forEach {info ->
+        sensorMap.keys.toList().forEach { info ->
             disConnect(info)
         }
     }

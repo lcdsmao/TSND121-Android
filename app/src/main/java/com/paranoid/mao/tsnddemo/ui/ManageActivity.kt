@@ -1,7 +1,8 @@
-package com.paranoid.mao.tsnddemo
+package com.paranoid.mao.tsnddemo.ui
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import com.paranoid.mao.tsnddemo.R
 
 
 class ManageActivity : AppCompatActivity() {

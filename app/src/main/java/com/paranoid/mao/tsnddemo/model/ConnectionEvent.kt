@@ -1,6 +1,4 @@
-package com.paranoid.mao.tsnddemo.events
-
-import com.paranoid.mao.tsnddemo.model.SensorInfo
+package com.paranoid.mao.tsnddemo.model
 
 /**
  * Created by Paranoid on 1/30/18.

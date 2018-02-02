@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.adapter
+package com.paranoid.mao.tsnddemo.ui.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -24,7 +24,7 @@ class AllSensorListAdapter(val sensorInfoList: MutableList<SensorInfo>)
         val view = LayoutInflater.from(parent.context).inflate(R.layout.sensor_list_item, parent, false)
         val holder = ViewHolder(view)
         view.find<CheckBox>(R.id.sensorCheck).setOnClickListener {
-//            modify(holder.adapterPosition, 4, (it as CheckBox).isChecked)
+            //            modify(holder.adapterPosition, 4, (it as CheckBox).isChecked)
             val position = holder.adapterPosition
             sensorInfoList[position] = sensorInfoList[position].copy(enableStatus = (it as CheckBox).isChecked)
         }

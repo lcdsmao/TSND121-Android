@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.tsnd
+package com.paranoid.mao.tsnddemo.service
 
 import com.paranoid.mao.tsnddemo.model.SensorData
 import jp.walkmate.tsndservice.Service.Impl.TSNDServiceImpl
