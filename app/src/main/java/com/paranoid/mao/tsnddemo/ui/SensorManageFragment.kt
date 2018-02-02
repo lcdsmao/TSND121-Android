@@ -103,7 +103,7 @@ class SensorManageFragment : Fragment() {
                 oldInfo?.let {
                     adapter?.apply {
                         sensorInfoList.removeAt(position)
-                        notifyItemChanged(position)
+                        notifyItemRemoved(position)
                     }
                 }
             }

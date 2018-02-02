@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">TSNDDemo</string>
+    <string name="app_name">TSND121</string>
     <string name="title_activity_edit">Manage</string>
+    <string name="title_activity_graph">Graph</string>
 
 
     <string name="connect">Connect</string>

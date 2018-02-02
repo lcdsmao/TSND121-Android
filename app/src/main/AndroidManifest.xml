@@ -36,7 +36,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.paranoid.mao.tsnddemo.ui.MainActivity" />
         </activity>
-        <activity android:name=".ui.GraphActivity"></activity>
+        <activity
+            android:name=".ui.GraphActivity"
+            android:label="@string/title_activity_graph"
+            android:parentActivityName=".ui.MainActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.paranoid.mao.tsnddemo.ui.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -81,6 +81,6 @@ class RealtimeGraphFragment : Fragment() {
     }
 
     private fun LineGraphSeries<DataPoint>.appendData(time: Double, data: Double) {
-        appendData(DataPoint(time, data), true, 100)
+        appendData(DataPoint(time, data), true, 55)
     }
 }

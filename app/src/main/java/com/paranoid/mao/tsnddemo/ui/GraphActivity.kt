@@ -34,7 +34,7 @@ class GraphActivity : AppCompatActivity() {
             return field
         }
 
-    private val flowable = Flowable.interval(200, TimeUnit.MILLISECONDS)
+    private val flowable = Flowable.interval(100, TimeUnit.MILLISECONDS)
             .map { sensorService?.data ?: SensorData() }
     private var disposable: Disposable? = null
 
