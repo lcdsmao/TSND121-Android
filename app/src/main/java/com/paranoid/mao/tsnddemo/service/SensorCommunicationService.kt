@@ -6,6 +6,8 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import com.paranoid.mao.tsnddemo.RxBus
+import com.paranoid.mao.tsnddemo.data.DelegatedPreferences
+import com.paranoid.mao.tsnddemo.data.PrefKeys
 import com.paranoid.mao.tsnddemo.model.Command
 import com.paranoid.mao.tsnddemo.model.ConnectionEvent
 import com.paranoid.mao.tsnddemo.model.MeasureEvent
@@ -19,6 +21,7 @@ class SensorCommunicationService : Service() {
     private val binder: IBinder = LocalBinder()
 //    private val sensorLeft = SensorService("left", "00:07:80:76:8F:35")
 //    private val sensorRight = SensorService("right", "00:07:80:76:8E:B1")
+    private var isSaveCsv by DelegatedPreferences(this, PrefKeys.IS_SAVE_CSV, false)
 
     private val sensorMap = Collections.synchronizedMap<SensorInfo, SensorService>(HashMap())
     private val connectDisposable = RxBus.listen(ConnectionEvent::class.java)
@@ -66,7 +69,7 @@ class SensorCommunicationService : Service() {
     }
 
     private fun sendStatus(info: SensorInfo) {
-        Log.v("info", "${info.toString()}, ${sensorMap[info].toString()}, ${sensorMap.size}")
+        Log.v("info", "$info, ${sensorMap[info].toString()}, ${sensorMap.size}")
         sensorMap[info]?.let { sensorManager ->
             RxBus.publish(ConnectionEvent(Command.STATUS, info, sensorManager.isConnected, sensorManager.isMeasuring))
         }
@@ -95,7 +98,7 @@ class SensorCommunicationService : Service() {
         doAsync {
             sensorMap[info]?.let { sensorManager ->
                 if (sensorManager.isConnected && !sensorManager.isMeasuring) {
-                    sensorManager.run()
+                    sensorManager.start(isSaveCsv)
                     sendStatus(info)
                 }
             }

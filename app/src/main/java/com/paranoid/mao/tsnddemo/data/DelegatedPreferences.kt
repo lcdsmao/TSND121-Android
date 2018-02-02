@@ -8,12 +8,13 @@ import android.content.SharedPreferences
 import com.paranoid.mao.tsnddemo.R
 import com.paranoid.mao.tsnddemo.get
 import com.paranoid.mao.tsnddemo.put
+import org.jetbrains.anko.defaultSharedPreferences
 import kotlin.reflect.KProperty
 
 class DelegatedPreferences<T>(private val context: Context, private val key: String, private val defaultValue: T) {
 
     private val prefs: SharedPreferences by lazy {
-        context.getSharedPreferences(context.getString(R.string.app_name), Context.MODE_PRIVATE)
+        context.defaultSharedPreferences
     }
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T {

@@ -3,10 +3,7 @@ package com.paranoid.mao.tsnddemo.ui
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
@@ -17,12 +14,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import com.paranoid.mao.tsnddemo.R
+import com.paranoid.mao.tsnddemo.data.PrefKeys
+import com.paranoid.mao.tsnddemo.get
+import com.paranoid.mao.tsnddemo.put
 import com.paranoid.mao.tsnddemo.service.SensorCommunicationService
 import com.paranoid.mao.tsnddemo.service.SensorCommunicationService.LocalBinder
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.startService
-import org.jetbrains.anko.stopService
-import org.jetbrains.anko.toast
+import org.jetbrains.anko.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -30,7 +27,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_ENABLE_BT = 101
         private const val REQUEST_WRITE_PERMISSION = 102
-        private const val REQUEST_MANAGE = 103
     }
 
     private var sensorCommunicationService: SensorCommunicationService? = null
@@ -123,6 +119,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
+        menu?.findItem(R.id.save_csv)?.isChecked = defaultSharedPreferences.get(PrefKeys.IS_SAVE_CSV, false)
         return true
     }
 
@@ -136,6 +133,11 @@ class MainActivity : AppCompatActivity() {
                     toast(R.string.open_manage_alert)
                     false
                 }
+            }
+            R.id.save_csv -> {
+                item.isChecked = !item.isChecked
+                defaultSharedPreferences.put(PrefKeys.IS_SAVE_CSV, item.isChecked)
+                true
             }
             else -> false
         }

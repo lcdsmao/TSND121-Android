@@ -6,7 +6,8 @@ import jp.walkmate.tsndservice.Service.Impl.TSNDServiceImpl
 /**
  * Created by Paranoid on 12/26/17.
  */
-class SensorService(val name: String, address: String) : TSNDServiceImpl(address) {
+class SensorService(private val name: String,
+                    address: String) : TSNDServiceImpl(address) {
 
     var data: SensorData = SensorData()
         get() = SensorData(time, accX, accY, accZ, gyrX, gyrY, gyrZ, magX, magY, magZ)
@@ -15,8 +16,8 @@ class SensorService(val name: String, address: String) : TSNDServiceImpl(address
     private var saver: SensorDataSaver? = null
     var isMeasuring = false
 
-    override fun run() {
-        saver = SensorDataSaver(name)
+    fun start(isSaveCsv: Boolean) {
+        saver = if (isSaveCsv) SensorDataSaver(name) else null
         isMeasuring = true
         super.run()
     }

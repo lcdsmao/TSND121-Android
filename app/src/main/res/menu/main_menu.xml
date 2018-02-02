@@ -5,5 +5,10 @@
         android:id="@+id/manage_menu"
         android:title="@string/manage_sensor"
         android:icon="@drawable/ic_build"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/save_csv"
+        android:title="@string/save_csv"
+        android:checkable="true"
+        app:showAsAction="never"/>
 </menu>
