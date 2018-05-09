@@ -3,6 +3,6 @@
     android:id="@+id/graphView"
     android:layout_width="match_parent"
     android:layout_height="200dp"
-    tools:context="com.paranoid.mao.tsnddemo.ui.RealtimeGraphFragment">
+    tools:context=".ui.graph.RealtimeGraphFragment">
 
 </com.jjoe64.graphview.GraphView>

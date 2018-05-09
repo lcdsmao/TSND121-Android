@@ -14,6 +14,7 @@
 
     <string name="msg_connect_success">Connected</string>
     <string name="msg_connect_failed">Connection Failed</string>
+    <string name="msg_failed">Failed</string>
     <string name="msg_need_bluetooth">Need Bluetooth!</string>
     <string name="msg_please_connect">Please Connect Sensor</string>
 
@@ -30,6 +31,7 @@
     <string name="add_sensor_mac">MAC address</string>
     <string name="save">Save</string>
     <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
     <string name="modify_sensor">Modify Sensor</string>
     <string name="illegal">Illegal Mac Address!</string>
     <string name="open_manage_alert">Stop connection to manage</string>
