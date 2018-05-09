@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.ui
+package com.paranoid.mao.tsnddemo.ui.graph
 
 import android.app.Service
 import android.content.ComponentName
@@ -8,7 +8,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
 import com.paranoid.mao.tsnddemo.R
-import com.paranoid.mao.tsnddemo.model.SensorData
+import com.paranoid.mao.tsnddemo.vo.SensorData
 import com.paranoid.mao.tsnddemo.service.SensorCommunicationService
 import com.paranoid.mao.tsnddemo.service.SensorService
 import io.reactivex.Flowable
@@ -27,12 +27,12 @@ class GraphActivity : AppCompatActivity() {
 
     private var id: Int = 0
     private var sensorService: SensorService? = null
-        get() {
-            if (field == null) {
-                field = sensorCommunicationService?.getSensorServiceFromId(id)
-            }
-            return field
-        }
+//        get() {
+//            if (field == null) {
+//                field = sensorCommunicationService?.getSensorServiceFromId(id)
+//            }
+//            return field
+//        }
 
     private val flowable = Flowable.interval(100, TimeUnit.MILLISECONDS)
             .map { sensorService?.data ?: SensorData() }
@@ -93,8 +93,8 @@ class GraphActivity : AppCompatActivity() {
         }
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val binder = service as SensorCommunicationService.LocalBinder
-            sensorCommunicationService = binder.getService()
+//            val binder = service as SensorCommunicationService.LocalBinder
+//            sensorCommunicationService = binder.getService()
         }
     }
 }

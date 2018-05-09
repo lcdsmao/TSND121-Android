@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.MainActivity">
+        <activity android:name="com.paranoid.mao.tsnddemo.ui.main.MainActivity"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,22 +29,22 @@
             android:exported="false"></service>
 
         <activity
-            android:name=".ui.ManageActivity"
+            android:name="com.paranoid.mao.tsnddemo.ui.manage.ManageActivity"
             android:label="@string/title_activity_edit"
-            android:parentActivityName=".ui.MainActivity"
+            android:parentActivityName="com.paranoid.mao.tsnddemo.ui.main.MainActivity"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.paranoid.mao.tsnddemo.ui.MainActivity" />
+                android:value="com.paranoid.mao.tsnddemo.ui.main.MainActivity" />
         </activity>
         <activity
-            android:name=".ui.GraphActivity"
+            android:name="com.paranoid.mao.tsnddemo.ui.graph.GraphActivity"
             android:label="@string/title_activity_graph"
-            android:parentActivityName=".ui.MainActivity"
+            android:parentActivityName="com.paranoid.mao.tsnddemo.ui.main.MainActivity"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.paranoid.mao.tsnddemo.ui.MainActivity" />
+                android:value="com.paranoid.mao.tsnddemo.ui.main.MainActivity" />
         </activity>
     </application>
 

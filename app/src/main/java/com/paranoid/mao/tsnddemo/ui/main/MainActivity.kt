@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.ui
+package com.paranoid.mao.tsnddemo.ui.main
 
 import android.Manifest
 import android.app.Activity
@@ -6,31 +6,26 @@ import android.bluetooth.BluetoothAdapter
 import android.content.*
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.IBinder
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import com.paranoid.mao.tsnddemo.R
-import com.paranoid.mao.tsnddemo.data.PrefKeys
-import com.paranoid.mao.tsnddemo.get
-import com.paranoid.mao.tsnddemo.put
+import com.paranoid.mao.tsnddemo.ui.manage.ManageActivity
+import com.paranoid.mao.tsnddemo.replaceFragmentInActivity
 import com.paranoid.mao.tsnddemo.service.SensorCommunicationService
-import com.paranoid.mao.tsnddemo.service.SensorCommunicationService.LocalBinder
+import dagger.android.support.DaggerAppCompatActivity
 import org.jetbrains.anko.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : DaggerAppCompatActivity() {
 
     companion object {
         private const val REQUEST_ENABLE_BT = 101
         private const val REQUEST_WRITE_PERMISSION = 102
     }
-
-    private var sensorCommunicationService: SensorCommunicationService? = null
-    private var bound: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,9 +35,7 @@ class MainActivity : AppCompatActivity() {
         requestBluetooth()
         requestPermission()
 
-        supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, SensorControlFragment(), SensorControlFragment::javaClass.name)
-                .commit()
+        replaceFragmentInActivity(SensorControlFragment.newInstance(), R.id.fragment_container)
     }
 
     private fun requestBluetooth() {
@@ -77,17 +70,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        bindService(Intent(this, SensorCommunicationService::class.java), sensorConnection, Context.BIND_AUTO_CREATE)
-    }
-
-    override fun onStop() {
-        unbindService(sensorConnection)
-        super.onStop()
-    }
-
     override fun onDestroy() {
+        Log.v("MAIN", "OnDestroy")
         if (isFinishing) {
             stopService<SensorCommunicationService>()
         }
@@ -105,38 +89,20 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    private val sensorConnection = object : ServiceConnection {
-        override fun onServiceDisconnected(name: ComponentName) {
-            bound = false
-        }
-
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val binder = service as LocalBinder
-            sensorCommunicationService = binder.getService()
-            bound = true
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
-        menu?.findItem(R.id.save_csv)?.isChecked = defaultSharedPreferences.get(PrefKeys.IS_SAVE_CSV, false)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return when (item?.itemId) {
             R.id.manage_menu -> {
-                if (bound && sensorCommunicationService?.isNoConnected == true) {
-                    startActivity<ManageActivity>()
-                    true
-                } else {
-                    toast(R.string.open_manage_alert)
-                    false
-                }
+                startActivity<ManageActivity>()
+                true
             }
             R.id.save_csv -> {
                 item.isChecked = !item.isChecked
-                defaultSharedPreferences.put(PrefKeys.IS_SAVE_CSV, item.isChecked)
+
                 true
             }
             else -> false

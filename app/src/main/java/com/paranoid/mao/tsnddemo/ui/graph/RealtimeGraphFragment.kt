@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.ui
+package com.paranoid.mao.tsnddemo.ui.graph
 
 
 import android.os.Bundle
@@ -50,9 +50,9 @@ class RealtimeGraphFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_realtime_graph, container, false)
 
-        val minY = arguments.getDouble("minY")
-        val maxY = arguments.getDouble("maxY")
-        val title = arguments.getString("title")
+        val minY = arguments?.getDouble("minY")?: 0.0
+        val maxY = arguments?.getDouble("maxY")?: 0.0
+        val title = arguments?.getString("title")
 
         val graphView = view.findViewById<GraphView>(R.id.graphView)
         graphView.apply {
