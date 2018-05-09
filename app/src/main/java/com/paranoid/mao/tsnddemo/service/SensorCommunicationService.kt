@@ -2,145 +2,142 @@ package com.paranoid.mao.tsnddemo.service
 
 import android.app.Service
 import android.content.Intent
-import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import com.paranoid.mao.tsnddemo.RxBus
-import com.paranoid.mao.tsnddemo.data.DelegatedPreferences
-import com.paranoid.mao.tsnddemo.data.PrefKeys
-import com.paranoid.mao.tsnddemo.model.Command
-import com.paranoid.mao.tsnddemo.model.ConnectionEvent
-import com.paranoid.mao.tsnddemo.model.MeasureEvent
-import com.paranoid.mao.tsnddemo.model.SensorInfo
-import org.jetbrains.anko.doAsync
-import java.util.*
-import kotlin.collections.HashMap
+import com.paranoid.mao.tsnddemo.vo.Sensor
+import com.paranoid.mao.tsnddemo.vo.SensorCommand
+import com.paranoid.mao.tsnddemo.vo.SensorResponse
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
+import java.util.concurrent.ConcurrentHashMap
 
 class SensorCommunicationService : Service() {
 
-    private val binder: IBinder = LocalBinder()
+//    private val binder: IBinder = LocalBinder()
 //    private val sensorLeft = SensorService("left", "00:07:80:76:8F:35")
 //    private val sensorRight = SensorService("right", "00:07:80:76:8E:B1")
-    private var isSaveCsv by DelegatedPreferences(this, PrefKeys.IS_SAVE_CSV, false)
+//    private var isSaveCsv by DelegatedPreferences(this, PrefKeys.IS_SAVE_CSV, false)
 
-    private val sensorMap = Collections.synchronizedMap<SensorInfo, SensorService>(HashMap())
-    private val connectDisposable = RxBus.listen(ConnectionEvent::class.java)
+    private val sensorMap = ConcurrentHashMap<Sensor, SensorService>()
+    private val compositeDisposable = CompositeDisposable()
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        listenCommand().addTo(compositeDisposable)
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return Service.START_STICKY
+    }
+
+    private fun listenCommand() = RxBus.listen(SensorCommand::class.java)
+            .distinctUntilChanged()
             .subscribe {
-                when (it.command) {
-                    Command.CONNECT -> connect(it.info)
-                    Command.DISCONNECT -> disConnect(it.info)
-                    Command.REQUEST_STATUS -> sendStatus(it.info)
-                    else -> return@subscribe
-                }
-            }
-    private val measureDisposable = RxBus.listen(MeasureEvent::class.java)
-            .subscribe {
-                when (it.command) {
-                    Command.MEASURE -> {
-                        if (isAnyMeasuring) stopMeasureAll()
-                        else startMeasureAll()
-                    }
-                    Command.REQUEST_STATUS -> {
-                        sendAnyMeasuringStatus()
-                    }
-                    else -> return@subscribe
+                Log.v("SERVICE", it.sensor.toString())
+                when(it) {
+                    is SensorCommand.Connect -> connect(it.sensor)
+                    is SensorCommand.Disconnect -> disconnect(it.sensor)
+                    is SensorCommand.StartMeasure -> startMeasure(it.sensor)
+                    is SensorCommand.StopMeasure -> stopMeasure(it.sensor)
                 }
             }
 
-    var isNoConnected: Boolean = true
-        private set
-        get() = sensorMap.isEmpty()
-    var isAnyMeasuring: Boolean = false
-        private set
-        get() = sensorMap.any { it.value.isMeasuring }
-
-    inner class LocalBinder : Binder() {
-        fun getService(): SensorCommunicationService = this@SensorCommunicationService
+    private fun connect(sensor: Sensor) {
+        if (sensorMap[sensor] == null) {
+            sensorMap[sensor] = SensorService(sensor.name, sensor.mac)
+        }
+        sensorMap[sensor].action(
+                SensorResponse.Connected(sensor),
+                SensorResponse.Failed(sensor)
+        ) {
+            connect()
+        }
     }
-
-    fun getSensorServiceFromId(id: Int): SensorService? = sensorMap.mapKeys { it.key.id }[id]
-
-    override fun onBind(intent: Intent): IBinder? {
-        return binder
+    
+    private fun disconnect(sensor: Sensor) {
+        sensorMap[sensor].action(
+                SensorResponse.Disconnected(sensor),
+                SensorResponse.Failed(sensor)
+        ) {
+            disconnect()
+        }
+        sensorMap.remove(sensor)
     }
-
-    private fun sendAnyMeasuringStatus() {
-        RxBus.publish(MeasureEvent(Command.STATUS, isAnyMeasuring))
+    
+    private fun startMeasure(sensor: Sensor) {
+        Log.v("SERVICE", "START")
+        sensorMap[sensor].action(
+                SensorResponse.MeasureStarted(sensor),
+                SensorResponse.Failed(sensor)
+        ) {
+            start(false)
+            true
+        }
     }
-
-    private fun sendStatus(info: SensorInfo) {
-        Log.v("info", "$info, ${sensorMap[info].toString()}, ${sensorMap.size}")
-        sensorMap[info]?.let { sensorManager ->
-            RxBus.publish(ConnectionEvent(Command.STATUS, info, sensorManager.isConnected, sensorManager.isMeasuring))
+    
+    private fun stopMeasure(sensor: Sensor) {
+        Log.v("SERVICE", "STOP")
+        sensorMap[sensor].action(
+                SensorResponse.MeasureStopped(sensor),
+                SensorResponse.Failed(sensor)
+        ) {
+            stop()
+            true
         }
     }
 
-    private fun connect(info: SensorInfo) {
-        if (sensorMap[info] == null) sensorMap[info] = SensorService(info.name, info.mac)
-        doAsync {
-            val isConnect = sensorMap[info]?.connect() ?: false
-            sendStatus(info)
-            if (!isConnect) {
-                sensorMap.remove(info)
+    private fun SensorService?.action(success: SensorResponse,
+                                      fail: SensorResponse,
+                                      command: SensorService.() -> Boolean) {
+        if (this == null) {
+            RxBus.publish(fail)
+        } else {
+            launch(CommonPool) {
+                val isSuccess: Boolean = async {
+                    command()
+                }.await()
+                if (isSuccess) RxBus.publish(success)
+                else RxBus.publish(fail)
             }
-        }
-    }
-
-    private fun disConnect(info: SensorInfo) {
-        doAsync {
-            sensorMap[info]?.disconnect()
-            sendStatus(info)
-            sensorMap.remove(info)
-        }
-    }
-
-    private fun startMeasure(info: SensorInfo) {
-        doAsync {
-            sensorMap[info]?.let { sensorManager ->
-                if (sensorManager.isConnected && !sensorManager.isMeasuring) {
-                    sensorManager.start(isSaveCsv)
-                    sendStatus(info)
-                }
-            }
-            sendAnyMeasuringStatus()
-        }
-
-    }
-
-    private fun stopMeasure(info: SensorInfo) {
-        doAsync {
-            sensorMap[info]?.let { sensorManager ->
-                if (sensorManager.isConnected && sensorManager.isMeasuring) {
-                    sensorManager.stop()
-                    sendStatus(info)
-                }
-            }
-            sendAnyMeasuringStatus()
         }
     }
 
     private fun startMeasureAll() {
-        sensorMap.keys.toList().forEach { info ->
-            startMeasure(info)
+        sensorMap.keys.toList().forEach { sensor ->
+            startMeasure(sensor)
         }
     }
 
     private fun stopMeasureAll() {
-        sensorMap.keys.toList().forEach { info ->
-            stopMeasure(info)
+        sensorMap.keys.toList().forEach { sensor ->
+            stopMeasure(sensor)
+        }
+    }
+    
+    private fun connectAll() {
+        sensorMap.keys().toList().forEach { sensor ->
+            startMeasure(sensor)
         }
     }
 
     private fun disConnectAll() {
-        sensorMap.keys.toList().forEach { info ->
-            disConnect(info)
+        sensorMap.keys.toList().forEach { sensor ->
+            disconnect(sensor)
         }
     }
 
     override fun onDestroy() {
+        Log.v("SERVICE", "DESTROY")
         disConnectAll()
-        connectDisposable.dispose()
-        measureDisposable.dispose()
+        compositeDisposable.clear()
         super.onDestroy()
     }
 }

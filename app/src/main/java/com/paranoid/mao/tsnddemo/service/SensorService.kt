@@ -1,6 +1,6 @@
 package com.paranoid.mao.tsnddemo.service
 
-import com.paranoid.mao.tsnddemo.model.SensorData
+import com.paranoid.mao.tsnddemo.vo.SensorData
 import jp.walkmate.tsndservice.Service.Impl.TSNDServiceImpl
 
 /**
@@ -15,6 +15,11 @@ class SensorService(private val name: String,
 
     private var saver: SensorDataSaver? = null
     var isMeasuring = false
+
+    override fun disconnect(): Boolean {
+        return if (isConnected) super.disconnect()
+        else true
+    }
 
     fun start(isSaveCsv: Boolean) {
         saver = if (isSaveCsv) SensorDataSaver(name) else null
