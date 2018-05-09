@@ -1,16 +1,22 @@
 package com.paranoid.mao.tsnddemo
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.SharedPreferences
+import android.support.annotation.IdRes
+import android.support.annotation.LayoutRes
+import android.support.annotation.Nullable
+import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentTransaction
+import android.support.v7.app.AppCompatActivity
+import android.text.TextUtils.replace
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 
 /**
  * Created by Paranoid on 2/1/18.
  */
-operator fun CompositeDisposable.plusAssign(disposable: Disposable) {
-    this.add(disposable)
-}
 
 @Suppress("UNCHECKED_CAST")
 fun <T> SharedPreferences.get(key: String, defaultValue: T): T {
@@ -41,4 +47,19 @@ fun <T> SharedPreferences.put(key: String, value: T) {
             else -> throw IllegalArgumentException()
         }.apply()
     }
+}
+
+fun AppCompatActivity.replaceFragmentInActivity(fragment: Fragment, frameId: Int) {
+    supportFragmentManager.transact {
+        replace(frameId, fragment)
+    }
+}
+
+/**
+ * Runs a FragmentTransaction, then calls commit().
+ */
+private inline fun FragmentManager.transact(action: FragmentTransaction.() -> Unit) {
+    beginTransaction().apply {
+        action()
+    }.commit()
 }
