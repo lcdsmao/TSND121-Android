@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.model
+package com.paranoid.mao.tsnddemo.vo
 
 /**
  * Created by Paranoid on 12/20/17.
