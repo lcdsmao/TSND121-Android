@@ -2,10 +2,7 @@ package com.paranoid.mao.inertialsensorservice
 
 fun List<Byte>.littleEndianInt(): Int {
     if (this.size > 4) return 0
-    val base = 8
-    var value = 0
-    this.forEachIndexed { index, byte ->
-        value = value or ((byte.toInt() and 0xFF) shl (base * value))
+    return this.fold(0) { acc, byte ->
+        (acc shl 8) or (byte.toInt() and 0xFF)
     }
-    return value
 }
