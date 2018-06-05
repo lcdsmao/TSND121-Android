@@ -42,9 +42,11 @@ class UtilKtTest {
         assertEquals(0xFF, 255)
         assertEquals(0xFF.toByte(), (-1).toByte())
         val bl1 = listOf<Byte>(0x1A, 0x2B, 0x3C, 0x4D)
-        assertEquals(bl1.littleEndianInt(), 439041101)
+        assertEquals(bl1.littleEndianInt(), 1295788826)
         val bl2 = listOf<Byte>(0x1A, 0x2B, 0x3C)
-        assertEquals(bl2.littleEndianInt(), 1715004)
+        assertEquals(bl2.littleEndianInt(), 3943194)
+        val bl3 = listOf<Byte>(0x1A, 0x2B, 0x80.toByte())
+        assertEquals(bl3.littleEndianInt(), -8377574)
     }
 
     @Test
