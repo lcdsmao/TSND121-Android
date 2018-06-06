@@ -2,18 +2,17 @@ package com.paranoid.mao.inertialsensorservice.tsnd121
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
-import android.util.Log
 import com.paranoid.mao.inertialsensorservice.InertialSensorData
 import com.paranoid.mao.inertialsensorservice.InertialSensorService
+import com.paranoid.mao.inertialsensorservice.InertialSensorStatus
 import com.paranoid.mao.inertialsensorservice.littleEndianInt
 import io.reactivex.*
-import io.reactivex.rxkotlin.toMaybe
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.processors.BehaviorProcessor
+import io.reactivex.processors.PublishProcessor
+import kotlinx.coroutines.experimental.launch
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
 import kotlin.collections.ArrayList
 
 //
@@ -44,108 +43,150 @@ import kotlin.collections.ArrayList
 // * @param samplingInterval: ms
 // */
 class Tsnd121Service(
-        private val deviceName: String = "",
-        private val deviceAddress: String,
-        private val samplingInterval: Int = 10,
+        val deviceName: String = "",
+        val deviceAddress: String,
+        val samplingInterval: Int = 10,
         private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 ) : InertialSensorService {
 
-    private var bluetoothSocket: BluetoothSocket? = null
-    private var connectionFlowable: Flowable<Tsnd121Command> = Flowable.empty()
+    private val commandProcessor: PublishProcessor<Tsnd121Command> = PublishProcessor.create()
+    private val statusProcessor: BehaviorProcessor<InertialSensorStatus> = BehaviorProcessor.createDefault(InertialSensorStatus.OFFLINE)
 
-    override fun connect(): Flowable<InertialSensorData> {
-        Log.v("Connect", "Before crate")
-        val map = createConnection()
-                .filter { response ->
-                    //                Log.v("Resonse", response.toString())
-                    response.commandCode in arrayOf(
+    override val status: Flowable<InertialSensorStatus>
+        get() = statusProcessor
+
+    override val sensorData: Flowable<InertialSensorData>
+        get() = commandProcessor
+                .filter {
+                    it.commandCode in arrayOf(
                             Tsnd121CommandCode.RECEIVED_ACC_GYRO_DATA,
                             Tsnd121CommandCode.RECEIVED_MAG_DATA
                     )
-
                 }
                 .buffer(2)
+                .filter {
+                    it[0].commandCode != it[1].commandCode
+                }
                 .map {
                     it.sortBy { c -> c.commandCode }
-                    //                Log.v("Data Command", it[0].toString())
-                    //                Log.v("Data Command", it[1].toString())
                     // 0x80
-                    val accGyro = extractData(it[1])
+                    val accGyro = extractData(it[0])
                     // 0x81
-                    //                val mag = extractData(it[0])
-                    //                InertialSensorData(time = accGyro[0],
-                    //                        accX = accGyro[1], accY = accGyro[2], accZ = accGyro[3],
-                    //                        gyroX = accGyro[4], gyroY = accGyro[5], gyroZ = accGyro[6],
-                    //                        magX = mag[1], magY = mag[2], magZ = mag[3]
-                    //                )
-                    InertialSensorData()
+                    val mag = extractData(it[1])
+                    InertialSensorData(time = accGyro[0],
+                            accX = accGyro[1], accY = accGyro[2], accZ = accGyro[3],
+                            gyroX = accGyro[4], gyroY = accGyro[5], gyroZ = accGyro[6],
+                            magX = mag[1], magY = mag[2], magZ = mag[3]
+                    ).also {
+//                        Log.v("Data", "$mag")
+                    }
                 }
-        return map
-    }
 
-    override fun disconnect() = Completable.fromAction {
-        beep(BEEP_DISCONNECT)
-        bluetoothSocket?.close()
-    }!!
+    private var bluetoothSocket: BluetoothSocket? = null
 
-    override fun startMeasure(): Completable {
-        val startCompletable = connectionFlowable
-                .filter {
-                    it.commandCode == Tsnd121CommandCode.RECEIVED_START_MEASURING
-                }.firstOrError()
-//                .timeout(1, TimeUnit.SECONDS, Schedulers.newThread())
-                .toCompletable()
-        return Completable.fromAction {
-            initMeasuring()
-        }.andThen(startCompletable)
-    }
-
-    override fun stopMeasure(): Completable {
-        val stopCompletable = connectionFlowable
-                .filter {
-                    it.commandCode == Tsnd121CommandCode.RECEIVED_STOP_MEASURING
-                }.firstOrError()
-//                .timeout(1, TimeUnit.SECONDS, Schedulers.newThread())
-                .toCompletable()
-        return Completable.fromAction {
-            val param: Byte = 0
-            sendCommand(Tsnd121CommandCode.COMMAND_STOP_MEASURING, param)
-        }.andThen(stopCompletable)
-    }
-
-    private fun mapResponse(command: Tsnd121Command) = when(command.commandCode) {
-        Tsnd121CommandCode.RECEIVED_ERROR_MEASURING -> {
-//            InertialSensorResponse.Error("Measuring Error")
-        }
-        Tsnd121CommandCode.RECEIVED_GET_BATTERY_CHARGE -> {
-            val voltage = command.params.slice(0..1).littleEndianInt()
-            val left = command.params.takeLast(1).littleEndianInt()
-            val message = "$voltage,$left"
-//            InertialSensorResponse.BatteryStatus(message)
-        }
-        Tsnd121CommandCode.RECEIVED_GET_STATUS -> {
-//            InertialSensorResponse.SensorStatus(command.params.toString())
-        }
-        Tsnd121CommandCode.RECEIVED_COMMAND_RESPONSE -> {
-            if (command.params[0] == 0.toByte()) {
-//                InertialSensorResponse.Success
-            } else {
-//                InertialSensorResponse.Error("")
+    override fun connect() {
+        launch {
+            try {
+                bluetoothAdapter.getRemoteDevice(deviceAddress)
+                        .createInsecureRfcommSocketToServiceRecord(SPP_UUID)
+                        .let {
+                            bluetoothSocket = it
+                            it.connect()
+                            beep(BEEP_CONNECT)
+                            statusProcessor.onNext(InertialSensorStatus.COMMAND)
+                            while (it.isConnected) {
+                                handleInputCommand(it.inputStream)?.let { cmd ->
+                                    if (cmd.commandCode == Tsnd121CommandCode.RECEIVED_START_MEASURING) {
+                                        statusProcessor.onNext(InertialSensorStatus.MEASURING)
+                                    } else if (cmd.commandCode == Tsnd121CommandCode.RECEIVED_STOP_MEASURING) {
+                                        statusProcessor.onNext(InertialSensorStatus.COMMAND)
+                                    }
+                                    commandProcessor.onNext(cmd)
+                                }
+                            }
+                        }
+            } catch (e: IllegalArgumentException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            } finally {
+                statusProcessor.onNext(InertialSensorStatus.OFFLINE)
             }
         }
-        Tsnd121CommandCode.RECEIVED_START_MEASURING -> {
-//            InertialSensorResponse.StartMeasure
-        }
-        Tsnd121CommandCode.RECEIVED_STOP_MEASURING -> {
-//            InertialSensorResponse.StopMeasure
-        }
-        else -> {
-//            InertialSensorResponse.Error("Error")
+    }
+
+    private fun handleInputCommand(inputStream: InputStream): Tsnd121Command? {
+        val array = ByteArray(64)
+        val header = inputStream.read().toByte()
+        return if (header == Tsnd121CommandCode.PROTOCOL_HEADER) {
+            var commandCode: Int
+            do {
+                commandCode = inputStream.read()
+            } while (commandCode == -1)
+            val paramLen = Tsnd121CommandCode.pLenMap[commandCode.toByte()] ?: return null
+            var offset = 0
+            do {
+                val size = inputStream.read(array, offset, paramLen - offset)
+                offset += size
+            } while (offset < paramLen)
+            val cmd = Tsnd121Command(commandCode.toByte(), array.slice(0 until paramLen))
+            var bcc: Int
+            do {
+                bcc = inputStream.read()
+            } while (bcc == -1)
+            if (bcc.toByte() == cmd.bcc) {
+                cmd
+            } else {
+                null
+            }
+        } else {
+            null
         }
     }
 
-    private fun beep(vararg param: Byte) {
-        sendCommand(Tsnd121CommandCode.COMMAND_SOUND_BEEP, *param)
+    override fun disconnect() {
+        launch {
+            if (statusProcessor.value != InertialSensorStatus.OFFLINE) {
+                try {
+                    beep(BEEP_DISCONNECT)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } finally {
+                    bluetoothSocket?.close()
+                    statusProcessor.onNext(InertialSensorStatus.OFFLINE)
+                }
+            }
+        }
+    }
+
+    override fun startMeasure() {
+        launch {
+            if (statusProcessor.value == InertialSensorStatus.COMMAND) {
+                try {
+                    initMeasureSetting()
+                    startMeasureNow()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    override fun stopMeasure() {
+        launch {
+//            Log.v("Stop", "${statusProcessor.value}")
+            if (statusProcessor.value == InertialSensorStatus.MEASURING) {
+                try {
+                    stopMeasureNow()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    private fun beep(param: Byte) {
+        sendCommand(Tsnd121CommandCode.COMMAND_SOUND_BEEP, param)
     }
 
     /**
@@ -171,11 +212,15 @@ class Tsnd121Service(
      * Command: 0 OK, 1 ERROR
      * Calibration: 0
      */
-    private fun initMeasuring() {
-        sendCommand(Tsnd121CommandCode.COMMAND_ACCGYR_SETTING, samplingInterval.toByte(), 1, 0)
-        sendCommand(Tsnd121CommandCode.COMMAND_MAG_SETTING, samplingInterval.toByte(), 1, 0)
-        sendCommand(Tsnd121CommandCode.COMMAND_ACC_RANGE_SETTING, samplingInterval.toByte(), 2)
-        sendCommand(Tsnd121CommandCode.COMMAND_GYR_RANGE_SETTING, samplingInterval.toByte(), 2)
+    private fun initMeasureSetting() {
+        sendCommand(Tsnd121CommandCode.COMMAND_SET_ACCGYR_SETTING, samplingInterval.toByte(), 1, 0)
+        sendCommand(Tsnd121CommandCode.COMMAND_SET_MAG_SETTING, samplingInterval.toByte(), 1, 0)
+        sendCommand(Tsnd121CommandCode.COMMAND_SET_PRES_SETTING, 0, 0, 0)
+        sendCommand(Tsnd121CommandCode.COMMAND_SET_ACC_RANGE_SETTING, samplingInterval.toByte(), 2)
+        sendCommand(Tsnd121CommandCode.COMMAND_SET_GYR_RANGE_SETTING, samplingInterval.toByte(), 2)
+    }
+
+    private fun startMeasureNow() {
         sendCommand(Tsnd121CommandCode.COMMAND_START_MEASURING,
                 0,
                 0, 1, 1,
@@ -185,67 +230,23 @@ class Tsnd121Service(
                 0, 0, 0)
     }
 
+    private fun stopMeasureNow() {
+        sendCommand(Tsnd121CommandCode.COMMAND_STOP_MEASURING, 0)
+    }
+
     private fun sendCommand(commandCode: Byte, vararg params: Byte) {
-//        Log.v("Tsnd121Command", "$commandCode, $params")
-        val command = Tsnd121Command(commandCode, params.asList())
         bluetoothSocket?.let {
-            it.outputStream.write(command.toByteArray())
-            it.outputStream.flush()
+            if (!it.isConnected) return
+            try {
+                val command = Tsnd121Command(commandCode, params.asList())
+                it.outputStream.write(command.toByteArray())
+                it.outputStream.flush()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
 
     }
-
-    private fun createConnection() = Flowable.create<Tsnd121Command>({ emitter ->
-            try {
-                val bluetoothDevice = bluetoothAdapter.getRemoteDevice(deviceAddress)
-                Log.v("Device", "try")
-                bluetoothDevice.createInsecureRfcommSocketToServiceRecord(SPP_UUID).let {
-                    bluetoothSocket = it
-                    Log.v("Create", "Connection")
-                    it.connect()
-
-                    beep(BEEP_CONNECT)
-                    beep(BEEP_CONNECT)
-
-                    val inputStream = it.inputStream
-                    val array = ByteArray(64)
-                    while (true) {
-                        val header = inputStream.read().toByte()
-                        if (header == Tsnd121CommandCode.PROTOCOL_HEADER) {
-                            var commandCode: Int
-                            do {
-                                commandCode = inputStream.read()
-                            } while (commandCode == -1)
-                            val paramLen = Tsnd121CommandCode.pLenMap[commandCode.toByte()]?: continue
-                            var offset = 0
-                            do {
-                                val size = inputStream.read(array, offset, paramLen - offset)
-                                offset += size
-                            } while (offset < paramLen)
-                            val cmd = Tsnd121Command(commandCode.toByte(), array.slice(0 until paramLen))
-                            var bcc: Int
-                            do {
-                                bcc = inputStream.read()
-                            } while (bcc == -1)
-                            if (bcc.toByte() == cmd.bcc) {
-                                emitter.onNext(cmd)
-                            } else {
-                                throw IOException("BCC is incorrect")
-                            }
-                        }
-                    }
-                }
-            } catch (e: IllegalArgumentException) {
-                emitter.onError(e)
-            } catch (e: IOException) {
-                emitter.onError(e)
-            }
-        }, BackpressureStrategy.ERROR)
-            .subscribeOn(Schedulers.io())
-            .share()
-            .also {
-                connectionFlowable = it
-            }
 
     /**
      * Extract data of acc, gyro, magnetic
