@@ -1,1 +1,1 @@
-include ':app', ':TSNDService', ':atrwirelesssensor'
+include ':app', ':atrwirelesssensor'
