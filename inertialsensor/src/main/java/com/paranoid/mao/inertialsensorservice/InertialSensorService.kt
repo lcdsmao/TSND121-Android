@@ -4,8 +4,12 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 
 interface InertialSensorService {
-    fun connect(): Flowable<InertialSensorData>
-    fun disconnect(): Completable
-    fun startMeasure(): Completable
-    fun stopMeasure(): Completable
+
+    val status: Flowable<InertialSensorStatus>
+    val sensorData: Flowable<InertialSensorData>
+
+    fun connect()
+    fun disconnect()
+    fun startMeasure()
+    fun stopMeasure()
 }
