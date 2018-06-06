@@ -74,9 +74,8 @@ class SensorControlFragment : DaggerFragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     when(it) {
-                        is SensorResponse.Failed -> toast(R.string.msg_failed)
-                        is SensorResponse.MeasureStarted -> fabButton.isActivated = true
-                        is SensorResponse.MeasureStopped -> fabButton.isActivated = false
+                        is SensorResponse.Measuring -> fabButton.isActivated = true
+                        else -> fabButton.isActivated = false
                     }
                     listAdapter.notifyDataSetChanged()
                 }.addTo(compositeDisposable)

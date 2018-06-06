@@ -24,11 +24,15 @@ class MainViewModel(dataRepository: DataRepository) : ViewModel() {
     val sensorStatusUpdate = RxBus.listen(SensorResponse::class.java)
             .doOnNext {
                 when(it) {
-                    is SensorResponse.Connected -> connectedSensorSet.add(it.sensor)
-                    is SensorResponse.MeasureStarted -> measuringSensorSet.add(it.sensor)
-                    is SensorResponse.MeasureStopped -> measuringSensorSet.remove(it.sensor)
-                    else -> {
-                        // stop or failed
+                    is SensorResponse.Command -> {
+                        connectedSensorSet.add(it.sensor)
+                        measuringSensorSet.remove(it.sensor)
+                    }
+                    is SensorResponse.Measuring -> {
+                        connectedSensorSet.add(it.sensor)
+                        measuringSensorSet.add(it.sensor)
+                    }
+                    is SensorResponse.Offline -> {
                         connectedSensorSet.remove(it.sensor)
                         measuringSensorSet.remove(it.sensor)
                     }

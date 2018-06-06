@@ -34,8 +34,8 @@ class GraphActivity : AppCompatActivity() {
 //            return field
 //        }
 
-    private val flowable = Flowable.interval(100, TimeUnit.MILLISECONDS)
-            .map { sensorService?.data ?: SensorData() }
+//    private val flowable = Flowable.interval(100, TimeUnit.MILLISECONDS)
+//            .map { sensorService?.data ?: SensorData() }
     private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,16 +64,16 @@ class GraphActivity : AppCompatActivity() {
         super.onStart()
         val intent = Intent(ctx, SensorCommunicationService::class.java)
         bindService(intent, sensorConnection, Service.BIND_AUTO_CREATE)
-        disposable = flowable.observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    it.apply {
-                        // ms -> s
-                        val t = time / 1000.0
-                        accFragment?.addData(t, accX / 10000.0, accY / 10000.0, accZ / 10000.0)
-                        gyroFragment?.addData(t, gyroX / 100.0, gyroY / 100.0, gyroZ / 100.0)
-                        magFragment?.addData(t, magX / 10.0, magY / 10.0, magZ / 10.0)
-                    }
-                }
+//        disposable = flowable.observeOn(AndroidSchedulers.mainThread())
+//                .subscribe {
+//                    it.apply {
+//                        // ms -> s
+//                        val t = time / 1000.0
+//                        accFragment?.addData(t, accX / 10000.0, accY / 10000.0, accZ / 10000.0)
+//                        gyroFragment?.addData(t, gyroX / 100.0, gyroY / 100.0, gyroZ / 100.0)
+//                        magFragment?.addData(t, magX / 10.0, magY / 10.0, magZ / 10.0)
+//                    }
+//                }
     }
 
     override fun onStop() {

@@ -19,33 +19,33 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.collections.ArrayList
 import kotlin.concurrent.withLock
 
-//
-///**
-// * CMD-SPEC
-// * https://www.atr-p.com/products/pdf/TSND121-cmd-spec.pdf
-// *
-// * ServiceStatus:
-// * IDLE - COMMAND - ONLINE_MEASURE
-// *
-// * Tsnd121Command Format:
-// * |----------------------------------------------------------|
-// * | Offset   | +0        | +1        | +2~+(n+1) | +(n+2)    |
-// * |----------------------------------------------------------|
-// * | Data     | Header    | Command   | Parameter | BCC       |
-// * | Type     | (0x9A)    | Code      | (n=1~246) |           |
-// * |----------------------------------------------------------|
-// *
-// * Header: Constant 0x9A
-// * Command Code: Tsnd121Command
-// * Parameter: Length is varied. Little endian (1234ABCD -> [CD AB 34 12])
-// * BCC: The XOR value between Offset+0 ~ Offset+(n+1)
-// *
-// * Command Type:
-// * Three types
-// * Command, Response, Event Command
-// *
-// * @param samplingInterval: ms
-// */
+
+/**
+ * CMD-SPEC
+ * https://www.atr-p.com/products/pdf/TSND121-cmd-spec.pdf
+ *
+ * ServiceStatus:
+ * IDLE - COMMAND - ONLINE_MEASURE
+ *
+ * Tsnd121Command Format:
+ * |----------------------------------------------------------|
+ * | Offset   | +0        | +1        | +2~+(n+1) | +(n+2)    |
+ * |----------------------------------------------------------|
+ * | Data     | Header    | Command   | Parameter | BCC       |
+ * | Type     | (0x9A)    | Code      | (n=1~246) |           |
+ * |----------------------------------------------------------|
+ *
+ * Header: Constant 0x9A
+ * Command Code: Tsnd121Command
+ * Parameter: Length is varied. Little endian (1234ABCD -> [CD AB 34 12])
+ * BCC: The XOR value between Offset+0 ~ Offset+(n+1)
+ *
+ * Command Type:
+ * Three types
+ * Command, Response, Event Command
+ *
+ * @param samplingInterval: ms
+ */
 class Tsnd121Service(
         val deviceName: String = "",
         val deviceAddress: String,

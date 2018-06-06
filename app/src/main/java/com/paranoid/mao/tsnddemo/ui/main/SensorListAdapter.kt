@@ -23,7 +23,6 @@ class SensorListAdapter(private val viewModel: MainViewModel)
         with(view) {
             // switch
             sensorSwitch.setOnClickListener {
-                it.isEnabled = false
                 val sensor = sensorList[holder.adapterPosition]
                 if ((it as Switch).isChecked) {
                     viewModel.connect(sensor)

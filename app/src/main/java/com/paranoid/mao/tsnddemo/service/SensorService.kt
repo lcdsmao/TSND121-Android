@@ -1,44 +1,67 @@
 package com.paranoid.mao.tsnddemo.service
 
-import com.paranoid.mao.tsnddemo.vo.SensorData
-import jp.walkmate.tsndservice.Service.Impl.TSNDServiceImpl
+import com.paranoid.mao.atrsensorservice.AtrSensorStatus
+import com.paranoid.mao.atrsensorservice.tsnd121.Tsnd121Service
+import com.paranoid.mao.tsnddemo.RxBus
+import com.paranoid.mao.tsnddemo.vo.Sensor
+import com.paranoid.mao.tsnddemo.vo.SensorResponse
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 
 /**
  * Created by Paranoid on 12/26/17.
  */
-class SensorService(private val name: String,
-                    address: String) : TSNDServiceImpl(address) {
+class SensorService(private val sensor: Sensor,
+                    private val isSave: Boolean = false) {
 
-    var data: SensorData = SensorData()
-        get() = SensorData(time, accX, accY, accZ, gyrX, gyrY, gyrZ, magX, magY, magZ)
-        private set
+    private val service = Tsnd121Service(sensor.name, sensor.mac, 10)
+    private var sensorDataSaver: SensorDataSaver? = null
 
-    private var saver: SensorDataSaver? = null
-    var isMeasuring = false
+    private var sensorDataDisposable: Disposable? = null
 
-    override fun disconnect(): Boolean {
-        return if (isConnected) super.disconnect()
-        else true
+    private var sensorStatusDisposable: Disposable? = null
+
+    fun connect() {
+        sensorStatusDisposable = service.status
+                .subscribeOn(Schedulers.io())
+                .subscribe {
+                    when(it) {
+                        AtrSensorStatus.OFFLINE -> {
+                            RxBus.publish(SensorResponse.Offline(sensor))
+                        }
+                        AtrSensorStatus.COMMAND -> {
+                            RxBus.publish(SensorResponse.Command(sensor))
+                        }
+                        AtrSensorStatus.MEASURING -> {
+                            RxBus.publish(SensorResponse.Measuring(sensor))
+                        }
+                    }
+                }
+        service.connect()
     }
 
-    fun start(isSaveCsv: Boolean) {
-        saver = if (isSaveCsv) SensorDataSaver(name) else null
-        isMeasuring = true
-        super.run()
+    fun disconnect() {
+        service.disconnect()
+        sensorDataSaver?.close()
+        sensorDataDisposable?.dispose()
     }
 
-    override fun stop() {
-        super.stop()
-        isMeasuring = false
-        saver = null
-    }
-
-    override fun getSensorData(): Boolean {
-        return if (super.getSensorData()) {
-            saver?.recordData(data)
-            true
-        } else {
-            false
+    fun startMeasure() {
+        if (isSave) {
+            sensorDataSaver = SensorDataSaver(sensor.name)
         }
+        sensorDataDisposable = service.sensorData
+                .subscribeOn(Schedulers.io())
+                .subscribe {
+                    RxBus.publish(it)
+                    if (isSave) sensorDataSaver?.recordData(it)
+                }
+        service.startMeasure()
+    }
+
+    fun stopMeasure() {
+        service.stopMeasure()
+        sensorDataSaver?.close()
+        sensorDataDisposable?.dispose()
     }
 }
