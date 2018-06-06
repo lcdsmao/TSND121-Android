@@ -1,9 +1,9 @@
 package com.paranoid.mao.tsnddemo.ui.manage
 
-import android.arch.lifecycle.ViewModelProviders
 import android.bluetooth.BluetoothAdapter
 import android.os.Bundle
 import android.support.design.widget.TextInputEditText
+import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -11,9 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.paranoid.mao.tsnddemo.R
-import com.paranoid.mao.tsnddemo.ViewModelFactory
 import com.paranoid.mao.tsnddemo.vo.Sensor
-import dagger.android.support.DaggerFragment
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -23,19 +21,14 @@ import org.jetbrains.anko.design.textInputEditText
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.toast
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
 /**
  * A placeholder fragment containing a simple view.
  */
-class SensorManageFragment : DaggerFragment() {
+class SensorManageFragment : Fragment() {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelFactory
-
-    private val viewModel: ManageViewModel by lazy {
-        ViewModelProviders.of(activity!!, viewModelFactory).get(ManageViewModel::class.java)
-    }
+    private val viewModel: ManageViewModel by inject()
     private val compositeDisposable = CompositeDisposable()
     private val listAdapter: SensorListAdapter by lazy { SensorListAdapter(viewModel) }
 

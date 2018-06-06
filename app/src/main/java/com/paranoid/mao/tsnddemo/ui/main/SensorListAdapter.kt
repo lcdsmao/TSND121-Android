@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.sensor_list_item.view.*
 /**
  * Created by Paranoid on 1/25/18.
  */
-class SensorListAdapter(private val viewModel: MainViewModel)
+class SensorListAdapter(private val viewModel: SensorControlViewModel)
     : RecyclerView.Adapter<SensorListAdapter.ViewHolder>() {
 
     var sensorList: List<Sensor> = listOf()

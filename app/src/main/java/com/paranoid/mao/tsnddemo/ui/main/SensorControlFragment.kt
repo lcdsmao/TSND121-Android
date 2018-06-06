@@ -1,7 +1,6 @@
 package com.paranoid.mao.tsnddemo.ui.main
 
 
-import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
@@ -11,27 +10,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.paranoid.mao.tsnddemo.R
-import com.paranoid.mao.tsnddemo.ViewModelFactory
 import com.paranoid.mao.tsnddemo.vo.SensorResponse
-import dagger.android.support.DaggerFragment
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.fragment_sensor_list.*
 import kotlinx.android.synthetic.main.fragment_sensor_list.view.*
-import org.jetbrains.anko.support.v4.toast
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
 /**
  * A simple [Fragment] subclass.
  */
-class SensorControlFragment : DaggerFragment() {
+class SensorControlFragment : Fragment() {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelFactory
-    private val viewModel: MainViewModel by lazy {
-        ViewModelProviders.of(activity!!, viewModelFactory).get(MainViewModel::class.java)
-    }
+    private val viewModel: SensorControlViewModel by inject()
 
     private val compositeDisposable = CompositeDisposable()
 

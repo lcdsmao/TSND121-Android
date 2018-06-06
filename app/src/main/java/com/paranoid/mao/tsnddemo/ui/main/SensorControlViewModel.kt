@@ -9,7 +9,7 @@ import com.paranoid.mao.tsnddemo.vo.SensorCommand
 import com.paranoid.mao.tsnddemo.vo.SensorResponse
 import java.util.*
 
-class MainViewModel(dataRepository: DataRepository) : ViewModel() {
+class SensorControlViewModel(dataRepository: DataRepository) : ViewModel() {
 
     private val connectedSensorSet = Collections.synchronizedSet(mutableSetOf<Sensor>())
     private val measuringSensorSet = Collections.synchronizedSet(mutableSetOf<Sensor>())

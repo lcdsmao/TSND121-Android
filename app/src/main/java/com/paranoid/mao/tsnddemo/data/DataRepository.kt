@@ -3,11 +3,8 @@ package com.paranoid.mao.tsnddemo.data
 import android.content.SharedPreferences
 import com.paranoid.mao.tsnddemo.vo.Sensor
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class DataRepository @Inject constructor(
+class DataRepository(
         private val database: AppDatabase,
         private val sharedPreferences: SharedPreferences) {
 
