@@ -9,11 +9,15 @@ import com.paranoid.mao.inertialsensorservice.littleEndianInt
 import io.reactivex.*
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.PublishProcessor
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.experimental.launch
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.collections.ArrayList
+import kotlin.concurrent.withLock
 
 //
 ///**
@@ -49,6 +53,7 @@ class Tsnd121Service(
         private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 ) : InertialSensorService {
 
+    private val commandLock = ReentrantLock()
     private val commandProcessor: PublishProcessor<Tsnd121Command> = PublishProcessor.create()
     private val statusProcessor: BehaviorProcessor<InertialSensorStatus> = BehaviorProcessor.createDefault(InertialSensorStatus.OFFLINE)
 
@@ -77,9 +82,7 @@ class Tsnd121Service(
                             accX = accGyro[1], accY = accGyro[2], accZ = accGyro[3],
                             gyroX = accGyro[4], gyroY = accGyro[5], gyroZ = accGyro[6],
                             magX = mag[1], magY = mag[2], magZ = mag[3]
-                    ).also {
-//                        Log.v("Data", "$mag")
-                    }
+                    )
                 }
 
     private var bluetoothSocket: BluetoothSocket? = null
@@ -174,7 +177,6 @@ class Tsnd121Service(
 
     override fun stopMeasure() {
         launch {
-//            Log.v("Stop", "${statusProcessor.value}")
             if (statusProcessor.value == InertialSensorStatus.MEASURING) {
                 try {
                     stopMeasureNow()
@@ -234,18 +236,62 @@ class Tsnd121Service(
         sendCommand(Tsnd121CommandCode.COMMAND_STOP_MEASURING, 0)
     }
 
-    private fun sendCommand(commandCode: Byte, vararg params: Byte) {
-        bluetoothSocket?.let {
-            if (!it.isConnected) return
-            try {
-                val command = Tsnd121Command(commandCode, params.asList())
-                it.outputStream.write(command.toByteArray())
-                it.outputStream.flush()
-            } catch (e: IOException) {
-                e.printStackTrace()
+    fun calibrateAcc(linearAccMode: Boolean = false, gravityAxis: String? = null): Single<Boolean> {
+        val params = if (linearAccMode) {
+            byteArrayOf(1, 1, 1, 0, 0, 0)
+        } else {
+            when(gravityAxis) {
+                "X" -> byteArrayOf(2, 1, 1, 0, 0, 0)
+                "Y" -> byteArrayOf(1, 2, 1, 0, 0, 0)
+                "Z" -> byteArrayOf(1, 1, 2, 0, 0, 0)
+                else -> throw IllegalArgumentException()
             }
         }
+        return Completable.fromAction {
+            sendCommand(Tsnd121CommandCode.COMMAND_SET_ACC_OFFSET, *params)
+        }.andThen(createCommandResponse())
+                .subscribeOn(Schedulers.io())
+    }
 
+    fun calibrateGyro(): Single<Boolean> {
+        val params = byteArrayOf(1, 1, 1, 0, 0, 0)
+        return Completable.fromAction {
+            sendCommand(Tsnd121CommandCode.COMMAND_SET_GYR_OFFSET, *params)
+        }.andThen(createCommandResponse())
+                .subscribeOn(Schedulers.io())
+    }
+
+    fun calibrateMag(): Single<Boolean> {
+        val param = 0.toByte()
+        return Completable.fromAction {
+            sendCommand(Tsnd121CommandCode.COMMAND_MAG_CALIBRATION_SETTING, param)
+        }.andThen(createCommandResponse())
+                .subscribeOn(Schedulers.io())
+    }
+
+    private fun createCommandResponse(): Single<Boolean> {
+        return commandProcessor
+                .filter { it.commandCode == Tsnd121CommandCode.RECEIVED_COMMAND_RESPONSE }
+                .timeout(100, TimeUnit.MILLISECONDS)
+                .firstOrError()
+                .map {
+                    it.params[0] == 0.toByte()
+                }
+    }
+
+    private fun sendCommand(commandCode: Byte, vararg params: Byte) {
+        commandLock.withLock {
+            bluetoothSocket?.let {
+                if (!it.isConnected) return
+                try {
+                    val command = Tsnd121Command(commandCode, params.asList())
+                    it.outputStream.write(command.toByteArray())
+                    it.outputStream.flush()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 
     /**
