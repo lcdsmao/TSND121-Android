@@ -4,16 +4,12 @@ import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.atrsensorservice.tsnd121.Tsnd121Service
 import com.paranoid.mao.tsnddemo.vo.Sensor
 import io.reactivex.disposables.Disposable
-import io.reactivex.processors.PublishProcessor
 import io.reactivex.schedulers.Schedulers
 
 /**
  * Created by Paranoid on 12/26/17.
  */
-class SensorService(private val sensor: Sensor,
-                    var isSave: Boolean = false,
-                    private val statusMap: MutableMap<Sensor, AtrSensorStatus>,
-                    private val statusStream: PublishProcessor<Pair<Sensor, AtrSensorStatus>>) {
+class SensorService(private val sensor: Sensor) {
 
     private val service = Tsnd121Service(sensor.name, sensor.mac, 10)
     private var sensorDataSaver: SensorDataSaver? = null
@@ -21,17 +17,12 @@ class SensorService(private val sensor: Sensor,
     private var sensorStatusDisposable: Disposable? = null
     val sensorData = service.sensorData
     val sensorStatus = service.status
-
-    init {
-        statusMap[sensor] = AtrSensorStatus.OFFLINE
-    }
+    private var currentStatus: AtrSensorStatus = AtrSensorStatus.OFFLINE
 
     fun connect() {
-        sensorStatusDisposable = service.status
-                .subscribeOn(Schedulers.io())
+        sensorStatusDisposable = sensorStatus
                 .subscribe {
-                    statusMap[sensor] = it
-                    statusStream.onNext(sensor to it)
+                    currentStatus = it
                 }
         service.connect()
     }
@@ -39,10 +30,12 @@ class SensorService(private val sensor: Sensor,
     fun disconnect() {
         service.disconnect()
         sensorDataSaver?.close()
+        sensorStatusDisposable?.dispose()
         sensorDataDisposable?.dispose()
     }
 
-    fun startMeasure() {
+    fun startMeasure(isSave: Boolean = false) {
+        if (currentStatus != AtrSensorStatus.COMMAND) return
         if (isSave) {
             sensorDataSaver = SensorDataSaver(sensor.name)
         }

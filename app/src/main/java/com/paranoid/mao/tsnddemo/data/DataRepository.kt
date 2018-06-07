@@ -1,6 +1,7 @@
 package com.paranoid.mao.tsnddemo.data
 
 import android.content.SharedPreferences
+import android.util.Log
 import com.paranoid.mao.atrsensorservice.AccGyroMagData
 import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.tsnddemo.data.database.AppDatabase
@@ -9,7 +10,12 @@ import com.paranoid.mao.tsnddemo.get
 import com.paranoid.mao.tsnddemo.put
 import com.paranoid.mao.tsnddemo.vo.Sensor
 import io.reactivex.Flowable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposables
+import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.PublishProcessor
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.combineLatest
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.ConcurrentHashMap
 
@@ -18,35 +24,25 @@ class DataRepository(
         private val sharedPreferences: SharedPreferences) {
 
     private val enabledSensorMap: ConcurrentHashMap<Sensor, SensorService> = ConcurrentHashMap()
-    val enabledSensorStatusMap: ConcurrentHashMap<Sensor, AtrSensorStatus> = ConcurrentHashMap()
-    val enabledSensorStatusStream: PublishProcessor<Pair<Sensor, AtrSensorStatus>> = PublishProcessor.create()
     val enabledSensorSet: Set<Sensor>
         get() = enabledSensorMap.keys
 
     val sensorList = database.sensorDao()
             .getAll()
-            .subscribeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())!!
 
-    val sensorEnabledList = database.sensorDao()
+    private val enabledSensorDisposable = database.sensorDao()
             .getEnabled()
             .subscribeOn(Schedulers.io())
-            .doOnNext { list ->
-                val disabledSensors = enabledSensorMap.keys.subtract(list)
-                val isSave = isSaveCsv
-                for (sensor in disabledSensors) {
-                    enabledSensorMap[sensor]?.disconnect()
-                    enabledSensorMap.remove(sensor)
-                }
-                for (sensor in list) {
-                    val service = enabledSensorMap[sensor]
-                    if (service == null) {
-                        enabledSensorMap[sensor] = SensorService(sensor, isSave,
-                                enabledSensorStatusMap, enabledSensorStatusStream)
-                    } else {
-                        service.isSave = isSave
-                    }
-                }
+            .subscribe {
+                handleNewEnabledSensorList(it)
             }
+    private var enabledSensorStatusDisposable = Disposables.empty()
+
+    private val sensorStatusListProcessor: BehaviorProcessor<List<Pair<Sensor, AtrSensorStatus>>>
+            = BehaviorProcessor.createDefault(emptyList())
+    val sensorStatusList: Flowable<List<Pair<Sensor, AtrSensorStatus>>>
+        get() = sensorStatusListProcessor
 
     var isSaveCsv: Boolean
         set(value) = sharedPreferences.put("save_csv", value)
@@ -55,6 +51,40 @@ class DataRepository(
     fun insert(vararg sensor: Sensor) = database.sensorDao().insert(*sensor)
 
     fun delete(sensor: Sensor) = database.sensorDao().delete(sensor)
+
+    private fun handleNewEnabledSensorList(list: List<Sensor>) {
+        enabledSensorMap.values.forEach {
+            it.disconnect()
+        }
+        enabledSensorMap.clear()
+        list.forEach {
+            enabledSensorMap[it] = SensorService(it)
+        }
+        sensorStatusListProcessor.onNext(list.map {
+            it to AtrSensorStatus.OFFLINE
+        })
+
+        enabledSensorStatusDisposable.dispose()
+        enabledSensorStatusDisposable = Flowable.mergeDelayError(
+                enabledSensorMap.entries
+                        .map { entry ->
+                            entry.value.sensorStatus.map {
+                                entry.key to it
+                            }
+                        }
+        ).subscribe {
+            val oldList = sensorStatusListProcessor.value
+            val newList = mutableListOf<Pair<Sensor, AtrSensorStatus>>()
+            for (p in oldList) {
+                newList += if (it.first == p.first) {
+                    it
+                } else {
+                    p
+                }
+            }
+            sensorStatusListProcessor.onNext(newList)
+        }
+    }
 
     fun connect(sensor: Sensor) {
         enabledSensorMap[sensor]?.connect()
@@ -65,7 +95,7 @@ class DataRepository(
     }
 
     fun startMeasure(sensor: Sensor) {
-        enabledSensorMap[sensor]?.startMeasure()
+        enabledSensorMap[sensor]?.startMeasure(isSaveCsv)
     }
 
     fun stopMeasure(sensor: Sensor) {
@@ -77,4 +107,10 @@ class DataRepository(
 
     fun getSensorStatus(sensor: Sensor): Flowable<AtrSensorStatus>
             = enabledSensorMap[sensor]?.sensorStatus?: Flowable.empty()
+
+    fun disconnectAll() {
+        enabledSensorMap.values.forEach {
+            it.disconnect()
+        }
+    }
 }
