@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.data
+package com.paranoid.mao.tsnddemo.data.database
 
 import android.arch.persistence.room.*
 import com.paranoid.mao.tsnddemo.vo.Sensor

@@ -1,4 +1,4 @@
-package com.paranoid.mao.tsnddemo.service
+package com.paranoid.mao.tsnddemo.data.sensor
 
 import java.lang.IllegalArgumentException
 import kotlin.math.max
