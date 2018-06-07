@@ -1,10 +1,12 @@
 package com.paranoid.mao.tsnddemo.ui.main
 
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
+import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.tsnddemo.R
 import com.paranoid.mao.tsnddemo.vo.Sensor
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
@@ -15,7 +17,7 @@ import kotlinx.android.synthetic.main.sensor_list_item.view.*
 class SensorListAdapter(private val viewModel: SensorControlViewModel)
     : RecyclerView.Adapter<SensorListAdapter.ViewHolder>() {
 
-    var sensorList: List<Sensor> = listOf()
+    var sensorList: List<Pair<Sensor, AtrSensorStatus>> = listOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.sensor_list_item, parent, false)
@@ -23,11 +25,12 @@ class SensorListAdapter(private val viewModel: SensorControlViewModel)
         with(view) {
             // switch
             sensorSwitch.setOnClickListener {
-                val sensor = sensorList[holder.adapterPosition]
+                val sensor = sensorList[holder.adapterPosition].first
+                it.isEnabled = false
                 if ((it as Switch).isChecked) {
                     viewModel.connect(sensor)
                 } else {
-                    viewModel.disConnect(sensor)
+                    viewModel.disconnect(sensor)
                 }
             }
         }
@@ -37,22 +40,27 @@ class SensorListAdapter(private val viewModel: SensorControlViewModel)
     override fun getItemCount(): Int = sensorList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val sensor = sensorList[position]
-        holder.bind(sensor, viewModel.isSensorConnected(sensor), viewModel.isSensorMeasuring(sensor))
+        val sensorAndStatus = sensorList[position]
+        holder.bind(sensorAndStatus)
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(sensor: Sensor, isConnected: Boolean, isMeasuring: Boolean) = itemView.apply {
-            sensorNameTextView.text = sensor.name
-            sensorMACTextView.text = sensor.mac
-            sensorCheck.visibility = View.GONE
-            sensorSwitch.apply {
-                visibility = View.VISIBLE
-                isEnabled = !isMeasuring
-                isChecked = isConnected
-            }
-            sensorStatusView.apply {
-                isActivated = isMeasuring
+        fun bind(sensorAndStatus: Pair<Sensor, AtrSensorStatus>) {
+            val (sensor, status) = sensorAndStatus
+            itemView.apply {
+                Log.v("Adapter", sensorAndStatus.toString())
+                sensorNameTextView.text = sensor.name
+                sensorMACTextView.text = sensor.mac
+                sensorCheck.visibility = View.GONE
+                sensorSwitch.apply {
+                    isEnabled = true
+                    visibility = View.VISIBLE
+                    isEnabled = status != AtrSensorStatus.MEASURING
+                    isChecked = status != AtrSensorStatus.OFFLINE
+                }
+                sensorStatusView.apply {
+                    isActivated = status == AtrSensorStatus.MEASURING
+                }
             }
         }
     }

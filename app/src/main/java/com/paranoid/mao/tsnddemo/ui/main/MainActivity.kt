@@ -16,9 +16,8 @@ import android.widget.Toast
 import com.paranoid.mao.tsnddemo.R
 import com.paranoid.mao.tsnddemo.ui.manage.ManageActivity
 import com.paranoid.mao.tsnddemo.replaceFragmentInActivity
-import com.paranoid.mao.tsnddemo.service.SensorCommunicationService
-import dagger.android.support.DaggerAppCompatActivity
 import org.jetbrains.anko.*
+import org.koin.android.ext.android.inject
 
 
 class MainActivity : AppCompatActivity() {
@@ -28,11 +27,12 @@ class MainActivity : AppCompatActivity() {
         private const val REQUEST_WRITE_PERMISSION = 102
     }
 
+    private val viewModel: SensorControlViewModel by inject()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        startService<SensorCommunicationService>()
         requestBluetooth()
         requestPermission()
 
@@ -71,14 +71,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        Log.v("MAIN", "OnDestroy")
-        if (isFinishing) {
-            stopService<SensorCommunicationService>()
-        }
-        super.onDestroy()
-    }
-
     private fun requestPermission(): Boolean {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -92,6 +84,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
+        menu?.findItem(R.id.save_csv)?.isChecked = viewModel.isSaveCsv
         return true
     }
 
@@ -103,10 +96,17 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.save_csv -> {
                 item.isChecked = !item.isChecked
-
+                viewModel.isSaveCsv = item.isChecked
                 true
             }
             else -> false
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isFinishing) {
+            viewModel.disconnectAll()
         }
     }
 }

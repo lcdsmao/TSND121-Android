@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.tsnddemo.R
 import com.paranoid.mao.tsnddemo.vo.SensorResponse
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -41,7 +42,6 @@ class SensorControlFragment : Fragment() {
             }
             fabButton.apply {
                 setImageResource(R.drawable.selector_measure)
-                isActivated = viewModel.isMeasuring
                 setOnClickListener {
                     if (!it.isActivated) {
                         viewModel.startMeasureAll()
@@ -54,23 +54,14 @@ class SensorControlFragment : Fragment() {
     }
 
     override fun onStart() {
-
         viewModel.enabledSensorList
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { it ->
-                    listAdapter.sensorList = it
+                .subscribe { list ->
+                    listAdapter.sensorList = list
                     listAdapter.notifyDataSetChanged()
-                }.addTo(compositeDisposable)
-
-        viewModel.sensorStatusUpdate
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    when(it) {
-                        is SensorResponse.Measuring -> fabButton.isActivated = true
-                        else -> fabButton.isActivated = false
-                    }
-                    listAdapter.notifyDataSetChanged()
-                }.addTo(compositeDisposable)
+                    fabButton.isActivated = list.any { it.second == AtrSensorStatus.MEASURING }
+                }
+                .addTo(compositeDisposable)
         super.onStart()
     }
 
