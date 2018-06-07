@@ -34,18 +34,6 @@ class RealtimeGraphFragment : Fragment() {
         thickness = 2
     }
 
-    companion object {
-        fun newInstance(title: String, minY: Double, maxY: Double): RealtimeGraphFragment {
-            val bundle = Bundle()
-            bundle.putDouble("minY", minY)
-            bundle.putDouble("maxY", maxY)
-            bundle.putString("title", title)
-            val fragment = RealtimeGraphFragment()
-            fragment.arguments = bundle
-            return fragment
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_realtime_graph, container, false)
@@ -83,4 +71,17 @@ class RealtimeGraphFragment : Fragment() {
     private fun LineGraphSeries<DataPoint>.appendData(time: Double, data: Double) {
         appendData(DataPoint(time, data), true, 55)
     }
+
+    companion object {
+        fun newInstance(title: String, minY: Double, maxY: Double): RealtimeGraphFragment {
+            val bundle = Bundle()
+            bundle.putDouble("minY", minY)
+            bundle.putDouble("maxY", maxY)
+            bundle.putString("title", title)
+            val fragment = RealtimeGraphFragment()
+            fragment.arguments = bundle
+            return fragment
+        }
+    }
+
 }

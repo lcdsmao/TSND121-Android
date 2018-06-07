@@ -11,12 +11,15 @@ import android.view.View
 import android.view.ViewGroup
 import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.tsnddemo.R
+import com.paranoid.mao.tsnddemo.ui.graph.GraphActivity
+import com.paranoid.mao.tsnddemo.vo.Sensor
 import com.paranoid.mao.tsnddemo.vo.SensorResponse
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.fragment_sensor_list.*
 import kotlinx.android.synthetic.main.fragment_sensor_list.view.*
+import org.jetbrains.anko.support.v4.startActivity
 import org.koin.android.ext.android.inject
 
 /**
@@ -25,10 +28,15 @@ import org.koin.android.ext.android.inject
 class SensorControlFragment : Fragment() {
 
     private val viewModel: SensorControlViewModel by inject()
-
     private val compositeDisposable = CompositeDisposable()
-
-    private val listAdapter by lazy { SensorListAdapter(viewModel) }
+    private val onItemClick: (Sensor) -> Unit = {
+        startActivity<GraphActivity>(
+                "sensor" to it
+        )
+    }
+    private val listAdapter: SensorListAdapter by lazy {
+        SensorListAdapter(viewModel, onItemClick)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {

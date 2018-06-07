@@ -3,7 +3,7 @@ package com.paranoid.mao.tsnddemo
 import android.arch.persistence.room.Room
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
-import com.paranoid.mao.tsnddemo.data.AppDatabase
+import com.paranoid.mao.tsnddemo.data.database.AppDatabase
 import com.paranoid.mao.tsnddemo.vo.Sensor
 import org.junit.After
 import org.junit.Before

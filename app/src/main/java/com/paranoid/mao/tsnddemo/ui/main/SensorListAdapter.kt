@@ -14,7 +14,9 @@ import kotlinx.android.synthetic.main.sensor_list_item.view.*
 /**
  * Created by Paranoid on 1/25/18.
  */
-class SensorListAdapter(private val viewModel: SensorControlViewModel)
+class SensorListAdapter(
+        private val viewModel: SensorControlViewModel,
+        private val onItemClick: (Sensor) -> Unit)
     : RecyclerView.Adapter<SensorListAdapter.ViewHolder>() {
 
     var sensorList: List<Pair<Sensor, AtrSensorStatus>> = listOf()
@@ -33,6 +35,10 @@ class SensorListAdapter(private val viewModel: SensorControlViewModel)
                     viewModel.disconnect(sensor)
                 }
             }
+            this.setOnClickListener {
+                val sensor = sensorList[holder.adapterPosition].first
+                onItemClick(sensor)
+            }
         }
         return holder
     }
@@ -48,7 +54,6 @@ class SensorListAdapter(private val viewModel: SensorControlViewModel)
         fun bind(sensorAndStatus: Pair<Sensor, AtrSensorStatus>) {
             val (sensor, status) = sensorAndStatus
             itemView.apply {
-                Log.v("Adapter", sensorAndStatus.toString())
                 sensorNameTextView.text = sensor.name
                 sensorMACTextView.text = sensor.mac
                 sensorCheck.visibility = View.GONE

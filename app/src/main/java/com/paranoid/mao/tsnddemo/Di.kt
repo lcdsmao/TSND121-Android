@@ -3,6 +3,7 @@ package com.paranoid.mao.tsnddemo
 import android.arch.persistence.room.Room
 import com.paranoid.mao.tsnddemo.data.database.AppDatabase
 import com.paranoid.mao.tsnddemo.data.DataRepository
+import com.paranoid.mao.tsnddemo.ui.graph.GraphViewModel
 import com.paranoid.mao.tsnddemo.ui.main.SensorControlViewModel
 import com.paranoid.mao.tsnddemo.ui.manage.ManageViewModel
 import org.jetbrains.anko.defaultSharedPreferences
@@ -17,4 +18,5 @@ val module: Module = applicationContext {
     bean { DataRepository(get(), get()) }
     viewModel { SensorControlViewModel(get()) }
     viewModel { ManageViewModel(get()) }
+    viewModel { GraphViewModel(get()) }
 }

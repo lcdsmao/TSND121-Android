@@ -1,50 +1,29 @@
 package com.paranoid.mao.tsnddemo.ui.graph
 
-import android.app.Service
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
 import com.paranoid.mao.tsnddemo.R
-import com.paranoid.mao.tsnddemo.vo.SensorData
-import com.paranoid.mao.tsnddemo.service.SensorCommunicationService
-import com.paranoid.mao.tsnddemo.service.SensorService
-import io.reactivex.Flowable
+import com.paranoid.mao.tsnddemo.vo.Sensor
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import org.jetbrains.anko.ctx
+import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
 
 class GraphActivity : AppCompatActivity() {
-
-    private var sensorCommunicationService: SensorCommunicationService? = null
 
     private var accFragment: RealtimeGraphFragment? = null
     private var gyroFragment: RealtimeGraphFragment? = null
     private var magFragment: RealtimeGraphFragment? = null
 
-    private var id: Int = 0
-    private var sensorService: SensorService? = null
-//        get() {
-//            if (field == null) {
-//                field = sensorCommunicationService?.getSensorServiceFromId(id)
-//            }
-//            return field
-//        }
-
-//    private val flowable = Flowable.interval(100, TimeUnit.MILLISECONDS)
-//            .map { sensorService?.data ?: SensorData() }
-    private var disposable: Disposable? = null
+    private lateinit var disposable: Disposable
+    private lateinit var sensor: Sensor
+    private val viewModel: GraphViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_graph)
 
-        intent?.let {
-            id = it.getIntExtra("id", 0)
-        }
+        sensor = intent?.getParcelableExtra("sensor")?: Sensor.DUMMY
 
         // 8G
         accFragment = RealtimeGraphFragment.newInstance("Accelerator", -6.0, 6.0)
@@ -62,39 +41,21 @@ class GraphActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val intent = Intent(ctx, SensorCommunicationService::class.java)
-        bindService(intent, sensorConnection, Service.BIND_AUTO_CREATE)
-//        disposable = flowable.observeOn(AndroidSchedulers.mainThread())
-//                .subscribe {
-//                    it.apply {
-//                        // ms -> s
-//                        val t = time / 1000.0
-//                        accFragment?.addData(t, accX / 10000.0, accY / 10000.0, accZ / 10000.0)
-//                        gyroFragment?.addData(t, gyroX / 100.0, gyroY / 100.0, gyroZ / 100.0)
-//                        magFragment?.addData(t, magX / 10.0, magY / 10.0, magZ / 10.0)
-//                    }
-//                }
+        disposable = viewModel.getSensorData(sensor)
+                .throttleFirst(100, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    // ms -> s
+                    val t = it.time / 1000.0
+                    accFragment?.addData(t, it.accX / 10000.0, it.accY / 10000.0, it.accZ / 10000.0)
+                    gyroFragment?.addData(t, it.gyroX / 100.0, it.gyroY / 100.0, it.gyroZ / 100.0)
+                    magFragment?.addData(t, it.magX / 10.0, it.magY / 10.0, it.magZ / 10.0)
+                }
     }
 
     override fun onStop() {
         super.onStop()
-        disposable?.dispose()
-        unbindService(sensorConnection)
+        disposable.dispose()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        disposable?.dispose()
-    }
-
-    private val sensorConnection = object : ServiceConnection {
-        override fun onServiceDisconnected(name: ComponentName) {
-            sensorCommunicationService = null
-        }
-
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-//            val binder = service as SensorCommunicationService.LocalBinder
-//            sensorCommunicationService = binder.getService()
-        }
-    }
 }
