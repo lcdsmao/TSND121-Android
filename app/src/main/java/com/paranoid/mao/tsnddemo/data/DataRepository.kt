@@ -9,7 +9,9 @@ import com.paranoid.mao.tsnddemo.data.sensor.SensorService
 import com.paranoid.mao.tsnddemo.get
 import com.paranoid.mao.tsnddemo.put
 import com.paranoid.mao.tsnddemo.vo.Sensor
+import com.paranoid.mao.tsnddemo.vo.SensorType
 import io.reactivex.Flowable
+import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.processors.BehaviorProcessor
@@ -107,6 +109,10 @@ class DataRepository(
 
     fun getSensorStatus(sensor: Sensor): Flowable<AtrSensorStatus>
             = enabledSensorMap[sensor]?.sensorStatus?: Flowable.empty()
+
+    fun calibrate(sensor: Sensor, type: SensorType): Single<Boolean> {
+        return enabledSensorMap[sensor]?.calibrate(type)?: Single.just(false)
+    }
 
     fun disconnectAll() {
         enabledSensorMap.values.forEach {

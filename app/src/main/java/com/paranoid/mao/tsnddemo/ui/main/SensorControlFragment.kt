@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,13 +14,15 @@ import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.tsnddemo.R
 import com.paranoid.mao.tsnddemo.ui.graph.GraphActivity
 import com.paranoid.mao.tsnddemo.vo.Sensor
-import com.paranoid.mao.tsnddemo.vo.SensorResponse
+import com.paranoid.mao.tsnddemo.vo.SensorType
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.fragment_sensor_list.*
 import kotlinx.android.synthetic.main.fragment_sensor_list.view.*
+import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.startActivity
+import org.jetbrains.anko.support.v4.toast
 import org.koin.android.ext.android.inject
 
 /**
@@ -34,8 +37,11 @@ class SensorControlFragment : Fragment() {
                 "sensor" to it
         )
     }
+    private val onItemLongClick: (Sensor) -> Unit = { sensor ->
+        createCalibrationDialog(sensor)
+    }
     private val listAdapter: SensorListAdapter by lazy {
-        SensorListAdapter(viewModel, onItemClick)
+        SensorListAdapter(viewModel, onItemClick, onItemLongClick)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -59,6 +65,42 @@ class SensorControlFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun createCalibrationDialog(sensor: Sensor) {
+        val itemList = resources.getStringArray(R.array.calibration).asList()
+        alert {
+            titleResource = R.string.calibration
+            items(itemList) { _, item, _ ->
+                val type = when (item) {
+                    getString(R.string.acc) -> {
+                        SensorType.ACCELEROMETER
+                    }
+                    getString(R.string.gyro) -> {
+                        SensorType.GYROSCOPE
+                    }
+                    getString(R.string.mag) -> {
+                        SensorType.MAGNETOMETER
+                    }
+                    else -> {
+                        return@items
+                    }
+                }
+                viewModel.calibrate(sensor, type)
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .doOnSubscribe {
+                            toast(R.string.msg_start_calibration)
+                        }
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe({
+                            if (it) toast(R.string.msg_success)
+                            else toast(R.string.msg_failed)
+                        }, {
+                            toast(R.string.msg_failed)
+                        })
+                        .addTo(compositeDisposable)
+            }
+        }.show()
     }
 
     override fun onStart() {

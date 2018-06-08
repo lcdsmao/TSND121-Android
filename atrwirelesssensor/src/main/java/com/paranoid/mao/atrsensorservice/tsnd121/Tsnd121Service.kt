@@ -2,6 +2,7 @@ package com.paranoid.mao.atrsensorservice.tsnd121
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
+import android.util.Log
 import com.paranoid.mao.atrsensorservice.AccGyroMagData
 import com.paranoid.mao.atrsensorservice.AtrSensorService
 import com.paranoid.mao.atrsensorservice.AtrSensorStatus
@@ -238,26 +239,26 @@ class Tsnd121Service(
 
     fun calibrateAcc(linearAccMode: Boolean = false, gravityAxis: String? = null): Single<Boolean> {
         val params = if (linearAccMode) {
-            byteArrayOf(1, 1, 1, 0, 0, 0)
+            byteArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         } else {
             when(gravityAxis) {
-                "X" -> byteArrayOf(2, 1, 1, 0, 0, 0)
-                "Y" -> byteArrayOf(1, 2, 1, 0, 0, 0)
-                "Z" -> byteArrayOf(1, 1, 2, 0, 0, 0)
+                "X" -> byteArrayOf(2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                "Y" -> byteArrayOf(1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                "Z" -> byteArrayOf(1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 else -> throw IllegalArgumentException()
             }
         }
         return Completable.fromAction {
             sendCommand(Tsnd121CommandCode.COMMAND_SET_ACC_OFFSET, *params)
-        }.andThen(createCommandResponse())
+        }.andThen(createCommandResponse(1000))
                 .subscribeOn(Schedulers.io())
     }
 
     fun calibrateGyro(): Single<Boolean> {
-        val params = byteArrayOf(1, 1, 1, 0, 0, 0)
+        val params = byteArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         return Completable.fromAction {
             sendCommand(Tsnd121CommandCode.COMMAND_SET_GYR_OFFSET, *params)
-        }.andThen(createCommandResponse())
+        }.andThen(createCommandResponse(1000))
                 .subscribeOn(Schedulers.io())
     }
 
@@ -265,16 +266,17 @@ class Tsnd121Service(
         val param = 0.toByte()
         return Completable.fromAction {
             sendCommand(Tsnd121CommandCode.COMMAND_MAG_CALIBRATION_SETTING, param)
-        }.andThen(createCommandResponse())
+        }.andThen(createCommandResponse(10000))
                 .subscribeOn(Schedulers.io())
     }
 
-    private fun createCommandResponse(): Single<Boolean> {
+    private fun createCommandResponse(time: Long = 100): Single<Boolean> {
         return commandProcessor
                 .filter { it.commandCode == Tsnd121CommandCode.RECEIVED_COMMAND_RESPONSE }
-                .timeout(100, TimeUnit.MILLISECONDS)
+                .timeout(time, TimeUnit.MILLISECONDS)
                 .firstOrError()
                 .map {
+                    Log.v("Command", it.toString())
                     it.params[0] == 0.toByte()
                 }
     }

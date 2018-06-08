@@ -16,7 +16,9 @@ import kotlinx.android.synthetic.main.sensor_list_item.view.*
  */
 class SensorListAdapter(
         private val viewModel: SensorControlViewModel,
-        private val onItemClick: (Sensor) -> Unit)
+        private val onItemClick: (Sensor) -> Unit,
+        private val onItemLongClick: (Sensor) -> Unit
+)
     : RecyclerView.Adapter<SensorListAdapter.ViewHolder>() {
 
     var sensorList: List<Pair<Sensor, AtrSensorStatus>> = listOf()
@@ -38,6 +40,11 @@ class SensorListAdapter(
             this.setOnClickListener {
                 val sensor = sensorList[holder.adapterPosition].first
                 onItemClick(sensor)
+            }
+            this.setOnLongClickListener {
+                val sensor = sensorList[holder.adapterPosition].first
+                onItemLongClick(sensor)
+                true
             }
         }
         return holder

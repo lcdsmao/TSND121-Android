@@ -3,6 +3,9 @@ package com.paranoid.mao.tsnddemo.data.sensor
 import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.atrsensorservice.tsnd121.Tsnd121Service
 import com.paranoid.mao.tsnddemo.vo.Sensor
+import com.paranoid.mao.tsnddemo.vo.SensorType
+import io.reactivex.Completable
+import io.reactivex.Single
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
@@ -51,5 +54,13 @@ class SensorService(private val sensor: Sensor) {
         service.stopMeasure()
         sensorDataSaver?.close()
         sensorDataDisposable?.dispose()
+    }
+
+    fun calibrate(type: SensorType): Single<Boolean> {
+        return when(type) {
+            SensorType.ACCELEROMETER -> service.calibrateAcc(false, "Z")
+            SensorType.GYROSCOPE -> service.calibrateGyro()
+            SensorType.MAGNETOMETER -> service.calibrateMag()
+        }
     }
 }

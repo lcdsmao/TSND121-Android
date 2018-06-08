@@ -3,6 +3,7 @@ package com.paranoid.mao.tsnddemo.ui.main
 import android.arch.lifecycle.ViewModel
 import com.paranoid.mao.tsnddemo.data.DataRepository
 import com.paranoid.mao.tsnddemo.vo.Sensor
+import com.paranoid.mao.tsnddemo.vo.SensorType
 
 class SensorControlViewModel(private val dataRepository: DataRepository) : ViewModel() {
 
@@ -34,4 +35,7 @@ class SensorControlViewModel(private val dataRepository: DataRepository) : ViewM
     fun disconnectAll() {
         dataRepository.disconnectAll()
     }
+
+    fun calibrate(sensor: Sensor, type: SensorType)
+            = dataRepository.calibrate(sensor, type)
 }
