@@ -18,6 +18,6 @@ data class Sensor(
         @PrimaryKey(autoGenerate = true) val id: Int = 0
 ) : Parcelable {
     companion object {
-        val DUMMY = Sensor("dummy", "00:00:00:00:00:00")
+        val DUMMY = Sensor("", "", false, 0)
     }
 }

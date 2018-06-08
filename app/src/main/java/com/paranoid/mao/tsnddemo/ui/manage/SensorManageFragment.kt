@@ -1,8 +1,6 @@
 package com.paranoid.mao.tsnddemo.ui.manage
 
-import android.bluetooth.BluetoothAdapter
 import android.os.Bundle
-import android.support.design.widget.TextInputEditText
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
@@ -16,11 +14,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.fragment_sensor_list.view.*
-import org.jetbrains.anko.*
-import org.jetbrains.anko.design.textInputEditText
-import org.jetbrains.anko.design.textInputLayout
-import org.jetbrains.anko.support.v4.alert
-import org.jetbrains.anko.support.v4.toast
 import org.koin.android.ext.android.inject
 
 /**
@@ -44,64 +37,16 @@ class SensorManageFragment : Fragment() {
             fabButton.apply {
                 setImageResource(R.drawable.ic_add)
                 setOnClickListener {
-                    showEditDialog()
+                    showEditDialog(Sensor.DUMMY)
                 }
             }
         }
         return view
     }
 
-    private fun showEditDialog(old: Sensor? = null) {
-        alert {
-            var nameEdit: TextInputEditText? = null
-            var macEdit: TextInputEditText? = null
-            titleResource = if (old == null) R.string.add_sensor else R.string.modify_sensor
-            customView {
-                verticalLayout {
-                    // Name input
-                    textInputLayout {
-                        nameEdit = textInputEditText {
-                            setText(old?.name)
-                            hintResource = R.string.add_sensor_name
-                        }
-                    }
-                    // Address input
-                    textInputLayout {
-                        macEdit = textInputEditText {
-                            setText((old?.mac))
-                            hintResource = R.string.add_sensor_mac
-                        }
-                    }
-                    lparams {
-                        width = matchParent
-                        padding = dip(16)
-                    }
-                }
-            }
-            // Save
-            positiveButton(R.string.save) {
-                val name = nameEdit?.text.toString()
-                val mac = macEdit?.text.toString()
-                if (!BluetoothAdapter.checkBluetoothAddress(mac)) {
-                    toast(R.string.illegal)
-                    return@positiveButton
-                } else {
-                    if (old == null) {
-                        viewModel.insert(Sensor(name, mac))
-                    } else {
-                        val alter = old.copy(name = name, mac = mac)
-                        viewModel.insert(alter)
-                    }
-                }
-            }
-            // Delete
-            val negativeResource = if (old == null) R.string.cancel else R.string.delete
-            negativeButton(negativeResource) {
-                old?.let {
-                    viewModel.delete(it)
-                }
-            }
-        }.show()
+    private fun showEditDialog(old: Sensor) {
+        val editDialogFragment = EditDialogFragment.newInstance(old)
+        editDialogFragment.show(activity?.supportFragmentManager, "EDIT")
     }
 
     override fun onStart() {

@@ -17,6 +17,8 @@
     <string name="msg_failed">Failed</string>
     <string name="msg_need_bluetooth">Need Bluetooth!</string>
     <string name="msg_please_connect">Please Connect Sensor</string>
+    <string name="msg_illegal_mac_address">Illegal Mac Address!</string>
+    <string name="msg_success">Success</string>
 
     <string name="acc">Acc</string>
     <string name="gyro">Gyro</string>
@@ -33,7 +35,6 @@
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="modify_sensor">Modify Sensor</string>
-    <string name="illegal">Illegal Mac Address!</string>
     <string name="open_manage_alert">Stop connection to manage</string>
     <string name="save_csv">Save csv</string>
 </resources>
