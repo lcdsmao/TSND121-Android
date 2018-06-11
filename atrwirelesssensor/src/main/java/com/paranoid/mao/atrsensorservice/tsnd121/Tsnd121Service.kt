@@ -250,7 +250,7 @@ class Tsnd121Service(
         }
         return Completable.fromAction {
             sendCommand(Tsnd121CommandCode.COMMAND_SET_ACC_OFFSET, *params)
-        }.andThen(createCommandResponse(1000))
+        }.andThen(createCommandResponse(2000))
                 .subscribeOn(Schedulers.io())
     }
 
@@ -258,7 +258,7 @@ class Tsnd121Service(
         val params = byteArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         return Completable.fromAction {
             sendCommand(Tsnd121CommandCode.COMMAND_SET_GYR_OFFSET, *params)
-        }.andThen(createCommandResponse(1000))
+        }.andThen(createCommandResponse(2000))
                 .subscribeOn(Schedulers.io())
     }
 
