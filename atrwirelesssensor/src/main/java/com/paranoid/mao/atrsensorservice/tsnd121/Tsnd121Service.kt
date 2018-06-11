@@ -276,7 +276,6 @@ class Tsnd121Service(
                 .timeout(time, TimeUnit.MILLISECONDS)
                 .firstOrError()
                 .map {
-                    Log.v("Command", it.toString())
                     it.params[0] == 0.toByte()
                 }
     }

@@ -30,7 +30,7 @@ class GraphActivity : AppCompatActivity() {
         // 1000dps
         gyroFragment = RealtimeGraphFragment.newInstance("Gyroscope", -800.0, 800.0)
         // 1200uT
-        magFragment = RealtimeGraphFragment.newInstance("Magnetic", -200.0, 200.0)
+        magFragment = RealtimeGraphFragment.newInstance("Magnetic", -100.0, 100.0)
 
         supportFragmentManager.beginTransaction()
                 .replace(R.id.acc_container, accFragment)
