@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.paranoid.mao.tsnddemo">
+    package="com.paranoid.mao.tsnd121">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.paranoid.mao.tsnddemo.ui.main.MainActivity"
+        <activity android:name="com.paranoid.mao.tsnd121.ui.main.MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,22 +24,22 @@
         </activity>
 
         <activity
-            android:name="com.paranoid.mao.tsnddemo.ui.manage.ManageActivity"
+            android:name="com.paranoid.mao.tsnd121.ui.manage.ManageActivity"
             android:label="@string/title_activity_edit"
-            android:parentActivityName="com.paranoid.mao.tsnddemo.ui.main.MainActivity"
+            android:parentActivityName="com.paranoid.mao.tsnd121.ui.main.MainActivity"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.paranoid.mao.tsnddemo.ui.main.MainActivity" />
+                android:value="com.paranoid.mao.tsnd121.ui.main.MainActivity" />
         </activity>
         <activity
-            android:name="com.paranoid.mao.tsnddemo.ui.graph.GraphActivity"
+            android:name="com.paranoid.mao.tsnd121.ui.graph.GraphActivity"
             android:label="@string/title_activity_graph"
-            android:parentActivityName="com.paranoid.mao.tsnddemo.ui.main.MainActivity"
+            android:parentActivityName="com.paranoid.mao.tsnd121.ui.main.MainActivity"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.paranoid.mao.tsnddemo.ui.main.MainActivity" />
+                android:value="com.paranoid.mao.tsnd121.ui.main.MainActivity" />
         </activity>
     </application>
 
