@@ -11,4 +11,16 @@
         android:title="@string/save_csv"
         android:checkable="true"
         app:showAsAction="never"/>
+    <group
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/g_direction_x"
+            android:title="@string/axis_x"/>
+        <item
+            android:id="@+id/g_direction_y"
+            android:title="@string/axis_y"/>
+        <item
+            android:id="@+id/g_direction_z"
+            android:title="@string/axis_z"/>
+    </group>
 </menu>

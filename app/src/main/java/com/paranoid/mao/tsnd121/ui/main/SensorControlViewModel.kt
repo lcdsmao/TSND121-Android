@@ -11,6 +11,9 @@ class SensorControlViewModel(private val dataRepository: DataRepository) : ViewM
     var isSaveCsv: Boolean
         set(value) { dataRepository.isSaveCsv = value }
         get() = dataRepository.isSaveCsv
+    var gDirection: String
+        set(value) { dataRepository.gDirection = value }
+        get() = dataRepository.gDirection
 
     fun connect(sensor: Sensor) {
         dataRepository.connect(sensor)

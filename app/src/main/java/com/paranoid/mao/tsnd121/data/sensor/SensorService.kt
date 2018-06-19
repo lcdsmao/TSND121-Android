@@ -56,9 +56,9 @@ class SensorService(private val sensor: Sensor) {
         sensorDataDisposable?.dispose()
     }
 
-    fun calibrate(type: SensorType): Single<Boolean> {
+    fun calibrate(type: SensorType, gDirection: String = "Z"): Single<Boolean> {
         return when(type) {
-            SensorType.ACCELEROMETER -> service.calibrateAcc(false, "Z")
+            SensorType.ACCELEROMETER -> service.calibrateAcc(false, gDirection)
             SensorType.GYROSCOPE -> service.calibrateGyro()
             SensorType.MAGNETOMETER -> service.calibrateMag()
         }

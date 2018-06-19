@@ -99,6 +99,21 @@ class MainActivity : AppCompatActivity() {
                 viewModel.isSaveCsv = item.isChecked
                 true
             }
+            R.id.g_direction_x -> {
+                item.isChecked = true
+                viewModel.gDirection = "X"
+                true
+            }
+            R.id.g_direction_y -> {
+                item.isChecked = true
+                viewModel.gDirection = "Y"
+                true
+            }
+            R.id.g_direction_z -> {
+                item.isChecked = true
+                viewModel.gDirection = "Z"
+                true
+            }
             else -> false
         }
     }

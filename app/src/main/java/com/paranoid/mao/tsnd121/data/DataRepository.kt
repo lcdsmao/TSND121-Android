@@ -49,6 +49,9 @@ class DataRepository(
     var isSaveCsv: Boolean
         set(value) = sharedPreferences.put("save_csv", value)
         get() = sharedPreferences.get("save_csv", false)
+    var gDirection: String
+        set(value) = sharedPreferences.put("g_direction", value)
+        get() = sharedPreferences.get("g_direction", "X")
 
     fun insert(vararg sensor: Sensor) = database.sensorDao().insert(*sensor)
 
@@ -111,7 +114,7 @@ class DataRepository(
             = enabledSensorMap[sensor]?.sensorStatus?: Flowable.empty()
 
     fun calibrate(sensor: Sensor, type: SensorType): Single<Boolean> {
-        return enabledSensorMap[sensor]?.calibrate(type)?: Single.just(false)
+        return enabledSensorMap[sensor]?.calibrate(type, gDirection)?: Single.just(false)
     }
 
     fun disconnectAll() {
