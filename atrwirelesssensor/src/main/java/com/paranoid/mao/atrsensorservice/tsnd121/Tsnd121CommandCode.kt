@@ -27,7 +27,7 @@ object Tsnd121CommandCode {
     const val COMMAND_GET_BATTERY_CHARGE = 0x3B.toByte()
     const val COMMAND_GET_STATUS = 0x3C.toByte()
 
-    const val RECEIVED_ACC_GYRO_DATA = 0x80.toByte()
+    const val RECEIVED_ACC_GYR_DATA = 0x80.toByte()
     const val RECEIVED_MAG_DATA = 0x81.toByte()
     const val RECEIVED_PRES_DATA = 0x82.toByte()
     const val RECEIVED_ERROR_MEASURING = 0x87.toByte()
@@ -36,14 +36,14 @@ object Tsnd121CommandCode {
 
     const val RECEIVED_COMMAND_RESPONSE = 0x8F.toByte()
     const val RECEIVED_INFO = 0x90.toByte()
-    const val RECEIVED_ACC_GYRO_SETTING = 0x97.toByte()
+    const val RECEIVED_ACC_GYR_SETTING = 0x97.toByte()
     const val RECEIVED_MAG_SETTING = 0x99.toByte()
     const val RECEIVED_PRES_SETTING = 0x9B.toByte()
     const val RECEIVED_GET_BATTERY_CHARGE = 0xBB.toByte()
     const val RECEIVED_GET_STATUS = 0xBC.toByte()
 
     val pLenMap = mapOf(
-            RECEIVED_ACC_GYRO_DATA to 22,
+            RECEIVED_ACC_GYR_DATA to 22,
             RECEIVED_MAG_DATA to 13,
             RECEIVED_ERROR_MEASURING to 5,
             RECEIVED_START_MEASURING to 1,

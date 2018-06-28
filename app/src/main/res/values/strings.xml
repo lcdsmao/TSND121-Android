@@ -1,7 +1,7 @@
 <resources>
     <array name="calibration">
         <item name="acc">@string/acc</item>
-        <item name="gyro">@string/gyro</item>
+        <item name="gyr">@string/gyr</item>
         <item name="mag">@string/mag</item>
     </array>
 
@@ -28,7 +28,7 @@
     <string name="msg_start_calibration">Start Calibration</string>
 
     <string name="acc">Accelerometer</string>
-    <string name="gyro">Gyroscope</string>
+    <string name="gyr">Gyrscope</string>
     <string name="mag">Magnetometer</string>
     <string name="axis_x">X</string>
     <string name="axis_y">Y</string>

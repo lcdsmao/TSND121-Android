@@ -31,7 +31,7 @@
             app:cardUseCompatPadding="true"
             app:cardElevation="1dp">
             <FrameLayout
-                android:id="@+id/gyro_container"
+                android:id="@+id/gyr_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
             </FrameLayout>

@@ -5,7 +5,7 @@ import io.reactivex.Flowable
 interface AtrSensorService {
 
     val status: Flowable<AtrSensorStatus>
-    val accGyroData: Flowable<AccGyroData>
+    val accGyrData: Flowable<AccGyrData>
     val magData: Flowable<MagData>
 
     fun connect()

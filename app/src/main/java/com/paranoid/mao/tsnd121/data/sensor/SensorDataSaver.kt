@@ -1,6 +1,6 @@
 package com.paranoid.mao.tsnd121.data.sensor
 
-import com.paranoid.mao.tsnd121.vo.AccGyroMagData
+import com.paranoid.mao.tsnd121.vo.AccGyrMagData
 import java.io.File
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
@@ -23,7 +23,7 @@ class SensorDataSaver(name: String = "") {
         createFile()
     }
 
-    fun recordData(data: AccGyroMagData) {
+    fun recordData(data: AccGyrMagData) {
         filePrinter?.print(csvFormat.format(data.toList()))
     }
 

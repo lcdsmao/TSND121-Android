@@ -57,21 +57,21 @@ class Tsnd121Service(
     override val status: Flowable<AtrSensorStatus>
         get() = statusProcessor
 
-    override val accGyroData: Flowable<AccGyroData>
+    override val accGyrData: Flowable<AccGyrData>
         get() = commandProcessor
                 .filter {
-                    it.commandCode == Tsnd121CommandCode.RECEIVED_ACC_GYRO_DATA
+                    it.commandCode == Tsnd121CommandCode.RECEIVED_ACC_GYR_DATA
                 }
                 .map {
-                    val accGyro = extractData(it)
-                    AccGyroData(
-                            time = accGyro[0],
-                            accX = accGyro[1],
-                            accY = accGyro[2],
-                            accZ = accGyro[3],
-                            gyroX = accGyro[4],
-                            gyroY = accGyro[5],
-                            gyroZ = accGyro[6]
+                    val accGyr = extractData(it)
+                    AccGyrData(
+                            time = accGyr[0],
+                            accX = accGyr[1],
+                            accY = accGyr[2],
+                            accZ = accGyr[3],
+                            gyrX = accGyr[4],
+                            gyrY = accGyr[5],
+                            gyrZ = accGyr[6]
                     )
                 }
 
@@ -258,7 +258,7 @@ class Tsnd121Service(
                 .subscribeOn(Schedulers.io())
     }
 
-    fun calibrateGyro(): Single<Boolean> {
+    fun calibrateGyr(): Single<Boolean> {
         val params = byteArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         return Completable.fromAction {
             sendCommand(Tsnd121CommandCode.COMMAND_SET_GYR_OFFSET, *params)
@@ -300,9 +300,9 @@ class Tsnd121Service(
     }
 
     /**
-     * Extract data of acc, gyro, magnetic
+     * Extract data of acc, gyr, magnetic
      * acc -160000~160000(0.1mg)
-     * gyro -200000~200000(0.01dps)
+     * gyr -200000~200000(0.01dps)
      * mag -12000~12000(0.1uT)
      */
     private fun extractData(response: Tsnd121Command): List<Int> {

@@ -1,7 +1,7 @@
 package com.paranoid.mao.tsnd121.data
 
 import android.content.SharedPreferences
-import com.paranoid.mao.tsnd121.vo.AccGyroMagData
+import com.paranoid.mao.tsnd121.vo.AccGyrMagData
 import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.tsnd121.data.database.AppDatabase
 import com.paranoid.mao.tsnd121.data.sensor.SensorService
@@ -102,7 +102,7 @@ class DataRepository(
         enabledSensorMap[sensor]?.stopMeasure()
     }
 
-    fun getSensorData(sensor: Sensor): Flowable<AccGyroMagData>
+    fun getSensorData(sensor: Sensor): Flowable<AccGyrMagData>
             = enabledSensorMap[sensor]?.sensorData?: Flowable.empty()
 
     fun getSensorStatus(sensor: Sensor): Flowable<AtrSensorStatus>

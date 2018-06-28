@@ -76,7 +76,7 @@ class SensorControlFragment : Fragment() {
                     getString(R.string.acc) -> {
                         SensorType.ACCELEROMETER
                     }
-                    getString(R.string.gyro) -> {
+                    getString(R.string.gyr) -> {
                         SensorType.GYROSCOPE
                     }
                     getString(R.string.mag) -> {

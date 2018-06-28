@@ -1,10 +1,10 @@
 package com.paranoid.mao.tsnd121.data.sensor
 
-import com.paranoid.mao.atrsensorservice.AccGyroData
+import com.paranoid.mao.atrsensorservice.AccGyrData
 import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.atrsensorservice.MagData
 import com.paranoid.mao.atrsensorservice.tsnd121.Tsnd121Service
-import com.paranoid.mao.tsnd121.vo.AccGyroMagData
+import com.paranoid.mao.tsnd121.vo.AccGyrMagData
 import com.paranoid.mao.tsnd121.vo.Sensor
 import com.paranoid.mao.tsnd121.vo.SensorType
 import io.reactivex.Flowable
@@ -25,24 +25,24 @@ class SensorService(private val sensor: Sensor) {
     private var sensorStatusDisposable: Disposable? = null
     private var currentStatus: AtrSensorStatus = AtrSensorStatus.OFFLINE
     val sensorStatus = service.status
-    val sensorData: Flowable<AccGyroMagData> = Flowable.combineLatest<AccGyroData, MagData, AccGyroMagData>(
-            service.accGyroData,
+    val sensorData: Flowable<AccGyrMagData> = Flowable.combineLatest<AccGyrData, MagData, AccGyrMagData>(
+            service.accGyrData,
             service.magData,
-            BiFunction { accGyro: AccGyroData, mag: MagData ->
-                AccGyroMagData(
-                        time = accGyro.time,
-                        accX = accGyro.accX,
-                        accY = accGyro.accY,
-                        accZ = accGyro.accZ,
-                        gyroX = accGyro.gyroX,
-                        gyroY = accGyro.gyroY,
-                        gyroZ = accGyro.gyroZ,
+            BiFunction { accGyr: AccGyrData, mag: MagData ->
+                AccGyrMagData(
+                        time = accGyr.time,
+                        accX = accGyr.accX,
+                        accY = accGyr.accY,
+                        accZ = accGyr.accZ,
+                        gyrX = accGyr.gyrX,
+                        gyrY = accGyr.gyrY,
+                        gyrZ = accGyr.gyrZ,
                         magX = mag.magX,
                         magY = mag.magY,
                         magZ = mag.magZ
                 )
             })
-            .distinct(AccGyroMagData::time)
+            .distinct(AccGyrMagData::time)
             .share()
 
     fun connect() {
@@ -82,7 +82,7 @@ class SensorService(private val sensor: Sensor) {
     fun calibrate(type: SensorType, gDirection: String = "Z"): Single<Boolean> {
         return when(type) {
             SensorType.ACCELEROMETER -> service.calibrateAcc(false, gDirection)
-            SensorType.GYROSCOPE -> service.calibrateGyro()
+            SensorType.GYROSCOPE -> service.calibrateGyr()
             SensorType.MAGNETOMETER -> service.calibrateMag()
         }
     }
