@@ -2,11 +2,7 @@ package com.paranoid.mao.atrsensorservice.tsnd121
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
-import android.util.Log
-import com.paranoid.mao.atrsensorservice.AccGyroMagData
-import com.paranoid.mao.atrsensorservice.AtrSensorService
-import com.paranoid.mao.atrsensorservice.AtrSensorStatus
-import com.paranoid.mao.atrsensorservice.littleEndianInt
+import com.paranoid.mao.atrsensorservice.*
 import io.reactivex.*
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.PublishProcessor
@@ -61,28 +57,36 @@ class Tsnd121Service(
     override val status: Flowable<AtrSensorStatus>
         get() = statusProcessor
 
-    override val sensorData: Flowable<AccGyroMagData>
+    override val accGyroData: Flowable<AccGyroData>
         get() = commandProcessor
                 .filter {
-                    it.commandCode in arrayOf(
-                            Tsnd121CommandCode.RECEIVED_ACC_GYRO_DATA,
-                            Tsnd121CommandCode.RECEIVED_MAG_DATA
-                    )
-                }
-                .buffer(2)
-                .filter {
-                    it[0].commandCode != it[1].commandCode
+                    it.commandCode == Tsnd121CommandCode.RECEIVED_ACC_GYRO_DATA
                 }
                 .map {
-                    it.sortBy { c -> c.commandCode }
-                    // 0x80
-                    val accGyro = extractData(it[0])
-                    // 0x81
-                    val mag = extractData(it[1])
-                    AccGyroMagData(time = accGyro[0],
-                            accX = accGyro[1], accY = accGyro[2], accZ = accGyro[3],
-                            gyroX = accGyro[4], gyroY = accGyro[5], gyroZ = accGyro[6],
-                            magX = mag[1], magY = mag[2], magZ = mag[3]
+                    val accGyro = extractData(it)
+                    AccGyroData(
+                            time = accGyro[0],
+                            accX = accGyro[1],
+                            accY = accGyro[2],
+                            accZ = accGyro[3],
+                            gyroX = accGyro[4],
+                            gyroY = accGyro[5],
+                            gyroZ = accGyro[6]
+                    )
+                }
+
+    override val magData: Flowable<MagData>
+        get() = commandProcessor
+                .filter {
+                    it.commandCode == Tsnd121CommandCode.RECEIVED_MAG_DATA
+                }
+                .map {
+                    val mag = extractData(it)
+                    MagData(
+                            time = mag[0],
+                            magX = mag[1],
+                            magY = mag[2],
+                            magZ = mag[3]
                     )
                 }
 
