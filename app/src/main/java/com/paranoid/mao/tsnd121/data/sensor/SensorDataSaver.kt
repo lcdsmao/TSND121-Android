@@ -1,6 +1,6 @@
 package com.paranoid.mao.tsnd121.data.sensor
 
-import com.paranoid.mao.atrsensorservice.AccGyroMagData
+import com.paranoid.mao.tsnd121.vo.AccGyroMagData
 import java.io.File
 import java.io.PrintWriter
 import java.text.SimpleDateFormat

@@ -1,8 +1,7 @@
 package com.paranoid.mao.tsnd121.data
 
 import android.content.SharedPreferences
-import android.util.Log
-import com.paranoid.mao.atrsensorservice.AccGyroMagData
+import com.paranoid.mao.tsnd121.vo.AccGyroMagData
 import com.paranoid.mao.atrsensorservice.AtrSensorStatus
 import com.paranoid.mao.tsnd121.data.database.AppDatabase
 import com.paranoid.mao.tsnd121.data.sensor.SensorService
@@ -12,12 +11,8 @@ import com.paranoid.mao.tsnd121.vo.Sensor
 import com.paranoid.mao.tsnd121.vo.SensorType
 import io.reactivex.Flowable
 import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.processors.BehaviorProcessor
-import io.reactivex.processors.PublishProcessor
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.combineLatest
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.ConcurrentHashMap
 

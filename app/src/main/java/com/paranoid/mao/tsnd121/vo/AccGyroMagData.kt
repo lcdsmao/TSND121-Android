@@ -1,4 +1,4 @@
-package com.paranoid.mao.atrsensorservice
+package com.paranoid.mao.tsnd121.vo
 
 data class AccGyroMagData(val time: Int = 0,
                           val accX: Int = 0, val accY: Int = 0, val accZ: Int = 0,
