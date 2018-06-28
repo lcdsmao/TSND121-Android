@@ -34,6 +34,7 @@
     <string name="axis_y">Y</string>
     <string name="axis_z">Z</string>
     <string name="calibration">Calibration</string>
+    <string name="gravity_direction">Gravity direction</string>
 
     <string name="manage_sensor">Manage Sensor</string>
     <string name="add_sensor">Add Sensor</string>
