@@ -23,14 +23,14 @@ import kotlinx.android.synthetic.main.fragment_sensor_list.view.*
 import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.startActivity
 import org.jetbrains.anko.support.v4.toast
-import org.koin.android.ext.android.inject
+import org.koin.android.architecture.ext.viewModel
 
 /**
  * A simple [Fragment] subclass.
  */
 class SensorControlFragment : Fragment() {
 
-    private val viewModel: SensorControlViewModel by inject()
+    private val viewModel: SensorControlViewModel by viewModel()
     private val compositeDisposable = CompositeDisposable()
     private val onItemClick: (Sensor) -> Unit = {
         startActivity<GraphActivity>(

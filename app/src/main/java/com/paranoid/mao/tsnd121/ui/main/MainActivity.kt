@@ -17,7 +17,7 @@ import com.paranoid.mao.tsnd121.R
 import com.paranoid.mao.tsnd121.ui.manage.ManageActivity
 import com.paranoid.mao.tsnd121.replaceFragmentInActivity
 import org.jetbrains.anko.*
-import org.koin.android.ext.android.inject
+import org.koin.android.architecture.ext.viewModel
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         private const val REQUEST_WRITE_PERMISSION = 102
     }
 
-    private val viewModel: SensorControlViewModel by inject()
+    private val viewModel: SensorControlViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

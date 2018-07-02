@@ -6,7 +6,7 @@ import com.paranoid.mao.tsnd121.R
 import com.paranoid.mao.tsnd121.vo.Sensor
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import org.koin.android.ext.android.inject
+import org.koin.android.architecture.ext.viewModel
 import java.util.concurrent.TimeUnit
 
 class GraphActivity : AppCompatActivity() {
@@ -17,7 +17,7 @@ class GraphActivity : AppCompatActivity() {
 
     private lateinit var disposable: Disposable
     private lateinit var sensor: Sensor
-    private val viewModel: GraphViewModel by inject()
+    private val viewModel: GraphViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
