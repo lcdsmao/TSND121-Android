@@ -11,7 +11,7 @@ import java.util.*
  */
 class SensorDataSaver(name: String = "") {
 
-    private val dateFormat = SimpleDateFormat("yyyyMMddHHmmss", Locale.US)
+    private val dateFormat = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
     private val folder = File("sdcard/TSND121/$name")
     private val csvFormat = SimpleCsvFormat(10)
     private var filePrinter: PrintWriter? = null
