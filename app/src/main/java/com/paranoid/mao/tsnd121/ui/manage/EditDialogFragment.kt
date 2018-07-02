@@ -55,8 +55,7 @@ class EditDialogFragment : DialogFragment() {
                 }
             }
             // Delete
-            val negativeResource = if (old == Sensor.DUMMY) R.string.cancel else R.string.delete
-            negativeButton(negativeResource) {
+            negativeButton(R.string.delete) {
                 viewModel.delete(old)
             }
             neutralPressed(R.string.from_paired_devices) {
