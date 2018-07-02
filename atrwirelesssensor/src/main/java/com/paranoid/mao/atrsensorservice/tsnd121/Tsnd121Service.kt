@@ -223,8 +223,8 @@ class Tsnd121Service(
         sendCommand(Tsnd121CommandCode.COMMAND_SET_ACCGYR_SETTING, samplingInterval.toByte(), 1, 0)
         sendCommand(Tsnd121CommandCode.COMMAND_SET_MAG_SETTING, samplingInterval.toByte(), 1, 0)
         sendCommand(Tsnd121CommandCode.COMMAND_SET_PRES_SETTING, 0, 0, 0)
-        sendCommand(Tsnd121CommandCode.COMMAND_SET_ACC_RANGE_SETTING, samplingInterval.toByte(), 2)
-        sendCommand(Tsnd121CommandCode.COMMAND_SET_GYR_RANGE_SETTING, samplingInterval.toByte(), 2)
+        sendCommand(Tsnd121CommandCode.COMMAND_SET_ACC_RANGE_SETTING, 2)
+        sendCommand(Tsnd121CommandCode.COMMAND_SET_GYR_RANGE_SETTING, 2)
     }
 
     private fun startMeasureNow() {
