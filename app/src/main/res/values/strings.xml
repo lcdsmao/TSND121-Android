@@ -46,4 +46,5 @@
     <string name="modify_sensor">Modify Sensor</string>
     <string name="open_manage_alert">Stop connection to manage</string>
     <string name="save_csv">Save csv</string>
+    <string name="from_paired_devices">From paired devices</string>
 </resources>

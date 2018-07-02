@@ -11,11 +11,11 @@ import org.jetbrains.anko.design.textInputEditText
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.toast
-import org.koin.android.ext.android.inject
+import org.koin.android.architecture.ext.sharedViewModel
 
 class EditDialogFragment : DialogFragment() {
 
-    private val viewModel: ManageViewModel by inject()
+    private val viewModel: ManageViewModel by sharedViewModel()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val old: Sensor = arguments?.getParcelable("sensor")?: Sensor.DUMMY
@@ -59,7 +59,15 @@ class EditDialogFragment : DialogFragment() {
             negativeButton(negativeResource) {
                 viewModel.delete(old)
             }
+            neutralPressed(R.string.from_paired_devices) {
+                showPairedDevices()
+            }
         }.build() as Dialog
+    }
+
+    private fun showPairedDevices() {
+        val fragment = PairedDevicesDialogFragment()
+        fragment.show(activity?.supportFragmentManager, PairedDevicesDialogFragment::class.java.simpleName)
     }
 
     companion object {

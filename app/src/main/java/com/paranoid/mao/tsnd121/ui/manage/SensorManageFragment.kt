@@ -14,14 +14,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.fragment_sensor_list.view.*
-import org.koin.android.ext.android.inject
+import org.koin.android.architecture.ext.sharedViewModel
 
 /**
  * A placeholder fragment containing a simple view.
  */
 class SensorManageFragment : Fragment() {
 
-    private val viewModel: ManageViewModel by inject()
+    private val viewModel: ManageViewModel by sharedViewModel()
     private val compositeDisposable = CompositeDisposable()
     private val listAdapter: SensorListAdapter by lazy { SensorListAdapter(viewModel) }
 
