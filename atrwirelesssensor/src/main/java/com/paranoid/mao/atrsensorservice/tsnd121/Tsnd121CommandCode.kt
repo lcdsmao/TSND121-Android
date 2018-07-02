@@ -4,6 +4,7 @@ object Tsnd121CommandCode {
     const val PROTOCOL_HEADER = 0x9A.toByte()
 
     const val COMMAND_GET_INFO = 0x10.toByte()
+    const val COMMAND_SET_TIME = 0x11.toByte()
     const val COMMAND_START_MEASURING = 0x13.toByte()
     const val COMMAND_STOP_MEASURING = 0x15.toByte()
     const val COMMAND_SET_ACCGYR_SETTING = 0x16.toByte()

@@ -2,6 +2,9 @@ package com.paranoid.mao.atrsensorservice.tsnd121
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
+import android.support.v4.util.TimeUtils
+import android.text.format.DateUtils
+import android.util.Log
 import com.paranoid.mao.atrsensorservice.*
 import io.reactivex.*
 import io.reactivex.processors.BehaviorProcessor
@@ -10,6 +13,11 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.experimental.launch
 import java.io.IOException
 import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.Year
+import java.time.ZoneId
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
@@ -101,6 +109,7 @@ class Tsnd121Service(
                             bluetoothSocket = it
                             it.connect()
                             beep(BEEP_CONNECT)
+                            setToCurrentTime()
                             statusProcessor.onNext(AtrSensorStatus.COMMAND)
                             while (it.isConnected) {
                                 handleInputCommand(it.inputStream)?.let { cmd ->
@@ -194,6 +203,30 @@ class Tsnd121Service(
 
     private fun beep(param: Byte) {
         sendCommand(Tsnd121CommandCode.COMMAND_SOUND_BEEP, param)
+    }
+
+    private fun setToCurrentTime() {
+        val cal = Calendar.getInstance(TimeZone.getDefault())
+        val year = (cal[Calendar.YEAR] - 2000).toByte()
+        val month = (cal[Calendar.MONTH] + 1).toByte()
+        val day = cal[Calendar.DAY_OF_MONTH].toByte()
+        val hour = cal[Calendar.HOUR_OF_DAY].toByte()
+        val minute = cal[Calendar.MINUTE].toByte()
+        val second = cal[Calendar.SECOND].toByte()
+        val milliSecond = cal[Calendar.MILLISECOND]
+        val ms1 = (milliSecond ushr 8).toByte()
+        val ms2 = (milliSecond and 0x00FF).toByte()
+        sendCommand(
+                Tsnd121CommandCode.COMMAND_SET_TIME,
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                second,
+                ms2,
+                ms1
+        )
     }
 
     /**
