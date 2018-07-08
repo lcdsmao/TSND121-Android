@@ -22,7 +22,7 @@ class EditDialogFragment : DialogFragment() {
         return alert {
             var nameEdit: TextInputEditText? = null
             var macEdit: TextInputEditText? = null
-            titleResource = if (old == Sensor.DUMMY) R.string.add_sensor else R.string.modify_sensor
+            titleResource = R.string.sensor_info
             customView {
                 verticalLayout {
                     // Name input
@@ -58,15 +58,7 @@ class EditDialogFragment : DialogFragment() {
             negativeButton(R.string.delete) {
                 viewModel.delete(old)
             }
-            neutralPressed(R.string.from_paired_devices) {
-                showPairedDevices()
-            }
         }.build() as Dialog
-    }
-
-    private fun showPairedDevices() {
-        val fragment = PairedDevicesDialogFragment()
-        fragment.show(activity?.supportFragmentManager, PairedDevicesDialogFragment::class.java.simpleName)
     }
 
     companion object {

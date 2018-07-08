@@ -18,7 +18,10 @@ class PairedDevicesDialogFragment: DialogFragment() {
         val devices = bluetoothAdapter.bondedDevices.toList()
         return alert {
             titleResource = R.string.from_paired_devices
-            items(devices.map { it.name }) { _, i ->
+            val deviceNames = devices
+                    .map { it.name }
+                    .filter { it.contains("TSND121") }
+            items(deviceNames) { _, i ->
                 val name = devices[i].name
                 val mac = devices[i].address
                 val sensor = Sensor(name, mac)

@@ -37,7 +37,7 @@ class SensorManageFragment : Fragment() {
             fabButton.apply {
                 setImageResource(R.drawable.ic_add)
                 setOnClickListener {
-                    showEditDialog(Sensor.DUMMY)
+                    showPairedDevices()
                 }
             }
         }
@@ -47,6 +47,11 @@ class SensorManageFragment : Fragment() {
     private fun showEditDialog(old: Sensor) {
         val editDialogFragment = EditDialogFragment.newInstance(old)
         editDialogFragment.show(activity?.supportFragmentManager, "EDIT")
+    }
+
+    private fun showPairedDevices() {
+        val fragment = PairedDevicesDialogFragment()
+        fragment.show(activity?.supportFragmentManager, PairedDevicesDialogFragment::class.java.simpleName)
     }
 
     override fun onStart() {
