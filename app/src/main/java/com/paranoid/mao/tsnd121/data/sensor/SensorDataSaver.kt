@@ -9,14 +9,17 @@ import java.util.*
 /**
  * Created by Paranoid on 12/26/17.
  */
-class SensorDataSaver(name: String = "") {
+class SensorDataSaver(
+        rootFolder: String,
+        deviceName: String
+) {
 
     private val dateFormat = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
-    private val folder = File("sdcard/TSND121/$name")
+    private val folder = File("$rootFolder/$deviceName")
     private val csvFormat = SimpleCsvFormat(10)
     private var filePrinter: PrintWriter? = null
 
-    private var fileName: String = name
+    private var fileName: String = deviceName
         get() = "${dateFormat.format(Calendar.getInstance().time)}_$field.csv"
 
     init {

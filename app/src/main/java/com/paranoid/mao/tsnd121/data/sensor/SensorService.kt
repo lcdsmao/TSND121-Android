@@ -16,7 +16,10 @@ import io.reactivex.schedulers.Schedulers
 /**
  * Created by Paranoid on 12/26/17.
  */
-class SensorService(private val sensor: Sensor) {
+class SensorService(
+        private val saveFileRootFolder: String,
+        private val sensor: Sensor
+) {
 
     private val samplingInterval = 10
     private val service = Tsnd121Service(sensor.name, sensor.mac, 10)
@@ -63,7 +66,7 @@ class SensorService(private val sensor: Sensor) {
     fun startMeasure(isSave: Boolean = false) {
         if (currentStatus != AtrSensorStatus.COMMAND) return
         if (isSave) {
-            sensorDataSaver = SensorDataSaver(sensor.name)
+            sensorDataSaver = SensorDataSaver(saveFileRootFolder, sensor.name)
         }
         sensorDataDisposable = sensorData
                 .subscribeOn(Schedulers.io())

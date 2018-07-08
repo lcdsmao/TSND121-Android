@@ -18,7 +18,9 @@ import java.util.concurrent.ConcurrentHashMap
 
 class DataRepository(
         private val database: AppDatabase,
-        private val sharedPreferences: SharedPreferences) {
+        private val sharedPreferences: SharedPreferences,
+        private val saveFileRootFolder: String
+) {
 
     private val enabledSensorMap: ConcurrentHashMap<Sensor, SensorService> = ConcurrentHashMap()
     val enabledSensorSet: Set<Sensor>
@@ -58,7 +60,7 @@ class DataRepository(
         }
         enabledSensorMap.clear()
         list.forEach {
-            enabledSensorMap[it] = SensorService(it)
+            enabledSensorMap[it] = SensorService(saveFileRootFolder, it)
         }
         sensorStatusListProcessor.onNext(list.map {
             it to AtrSensorStatus.OFFLINE
