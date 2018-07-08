@@ -22,7 +22,7 @@ class SensorService(
 ) {
 
     private val samplingInterval = 10
-    private val service = Tsnd121Service(sensor.name, sensor.mac, 10)
+    private val service = Tsnd121Service(sensor.name, sensor.mac, samplingInterval)
     private var sensorDataSaver: SensorDataSaver? = null
     private var sensorDataDisposable: Disposable? = null
     private var sensorStatusDisposable: Disposable? = null
