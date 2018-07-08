@@ -15,12 +15,11 @@ class PairedDevicesDialogFragment: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        val devices = bluetoothAdapter.bondedDevices.toList()
+        val devices = bluetoothAdapter.bondedDevices
+                .filter { it.name.contains("TSND121") }
         return alert {
             titleResource = R.string.from_paired_devices
-            val deviceNames = devices
-                    .map { it.name }
-                    .filter { it.contains("TSND121") }
+            val deviceNames = devices.map { it.name }
             items(deviceNames) { _, i ->
                 val name = devices[i].name
                 val mac = devices[i].address
