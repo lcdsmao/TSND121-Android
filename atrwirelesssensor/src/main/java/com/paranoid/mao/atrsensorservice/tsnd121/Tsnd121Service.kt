@@ -11,6 +11,7 @@ import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.newSingleThreadContext
 import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
@@ -22,6 +23,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.collections.ArrayList
+import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
 
 
@@ -101,7 +103,7 @@ class Tsnd121Service(
     private var bluetoothSocket: BluetoothSocket? = null
 
     override fun connect() {
-        launch {
+        launch(context = newSingleThreadContext(name = deviceName)) {
             try {
                 bluetoothAdapter.getRemoteDevice(deviceAddress)
                         .createInsecureRfcommSocketToServiceRecord(SPP_UUID)
