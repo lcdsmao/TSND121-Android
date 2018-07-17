@@ -191,10 +191,13 @@ class Tsnd121Service(
     }
 
     override fun startMeasure() {
+        Log.v("TSND121", "Start 1")
         launch {
+            Log.v("TSND121", "Start 2")
             if (statusProcessor.value == AtrSensorStatus.COMMAND) {
                 try {
                     initMeasureSetting()
+                    Log.v("TSND121", "Start 3")
                     startMeasureNow()
                 } catch (e: IOException) {
                     e.printStackTrace()
