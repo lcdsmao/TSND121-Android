@@ -64,6 +64,9 @@ class Tsnd121Service(
     private val commandProcessor: PublishProcessor<Tsnd121Command> = PublishProcessor.create()
     private val statusProcessor: BehaviorProcessor<AtrSensorStatus> = BehaviorProcessor.createDefault(AtrSensorStatus.OFFLINE)
 
+    private var accGyroLast: Int = 0
+    private var magLast: Int = 0
+
     override val status: Flowable<AtrSensorStatus>
         get() = statusProcessor
 
@@ -74,6 +77,10 @@ class Tsnd121Service(
                 }
                 .map {
                     val accGyr = extractData(it)
+                    if (accGyr[0] - accGyroLast > samplingInterval) {
+                        Log.v(TAG, "Acc Gyro skip at ${accGyr[0]}, ${accGyr[0] - accGyroLast}")
+                    }
+                    accGyroLast = accGyr[0]
                     AccGyrData(
                             time = accGyr[0],
                             accX = accGyr[1],
@@ -92,6 +99,10 @@ class Tsnd121Service(
                 }
                 .map {
                     val mag = extractData(it)
+                    if (mag[0] - magLast > samplingInterval) {
+                        Log.v(TAG, "Mag skip at ${mag[0]}, ${mag[0] - magLast}")
+                    }
+                    magLast = mag[0]
                     MagData(
                             time = mag[0],
                             magX = mag[1],
@@ -156,6 +167,7 @@ class Tsnd121Service(
             if (bcc.toByte() == cmd.bcc) {
                 cmd
             } else {
+                Log.v(Tsnd121Service::class.java.simpleName, "BCC Error: $cmd")
                 null
             }
         } else {
@@ -354,6 +366,7 @@ class Tsnd121Service(
 
     companion object {
         val SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")!!
+        val TAG = Tsnd121Service::class.java.simpleName
 
         const val BEEP_CONNECT = 0x02.toByte()
         const val BEEP_DISCONNECT = 0x07.toByte()
